@@ -33,5 +33,9 @@ namespace SuperBenchmarker
         [Option('d', "dryRun", Required = false, HelpText = "Runs a single dry run request to make sure all is good")]
         public bool IsDryRun { get; set; }
 
+        [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
+        public bool Verbose { get; set; }
+
+
     }
 }

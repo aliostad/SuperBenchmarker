@@ -9,7 +9,7 @@ namespace SuperBenchmarker
 {
     public class TokenisedString
     {
-        private const string TokenPattern = @"\{\{([^}]+?)\}\}";
+        private const string TokenPattern = @"\{\{\{([^\}]+?)\}\}\}";
         private readonly string _content;
         private List<Token> _tokens; 
         
@@ -23,7 +23,7 @@ namespace SuperBenchmarker
         public string ToString(IDictionary<string, object> tokens)
         {
             var s = _content;
-            _tokens.ForEach((t) => t.Replace(s, tokens[t.Name].ToString()));
+            _tokens.ForEach((t) => s = t.Replace(s, tokens[t.Name].ToString()));
             return s;
         }
 

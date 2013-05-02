@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace SuperBenchmarker
         private TokenisedString _url;
         private HttpClient _client = new HttpClient();
         private TemplateParser _templateParser;
+        private IValueProvider _valueProvider;
 
         public Requester(CommandLineOptions options)
         {
@@ -22,6 +24,23 @@ namespace SuperBenchmarker
             if (!string.IsNullOrEmpty(options.Template))
             {
                 _templateParser = new TemplateParser(File.ReadAllText(options.Template));
+            }
+
+            _valueProvider = new NoValueProvider();
+
+            if (!string.IsNullOrEmpty(_options.Plugin)) // plugin
+            {
+                var assembly = Assembly.LoadFile(_options.Plugin);
+                var valueProviderType = assembly.GetExportedTypes().Where(t => typeof (IValueProvider)
+                                                                      .IsAssignableFrom(t)).FirstOrDefault();
+                if(valueProviderType==null)
+                    throw new ArgumentException("No public type in plugin implements IValueProvider.");
+
+                _valueProvider = (IValueProvider)Activator.CreateInstance(valueProviderType);
+            }
+            else if (!string.IsNullOrEmpty(options.ValuesFile)) // csv values file
+            {
+                _valueProvider = new CsvValueProvider(options.ValuesFile);
             }
 
         }
@@ -34,11 +53,14 @@ namespace SuperBenchmarker
         public async Task NextAsync(int i)
         {
             var request = BuildMessage(i);
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.Write(request.Method.Method + " ");
+            Console.WriteLine(request.RequestUri.ToString());
+            Console.ResetColor();
             try
             {
                 var response = await _client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
-                Console.Write(".");
             }
             catch (Exception e)
             {
@@ -64,7 +86,7 @@ namespace SuperBenchmarker
 
         private IDictionary<string, object> GetParams(int i)
         {
-            return new Dictionary<string, object>();
+            return _valueProvider.GetValues(i);
         }
 
     }

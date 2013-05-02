@@ -12,12 +12,17 @@ namespace SuperBenchmarker
         public int Start { get; set; }
         public int Length { get; set; }
 
-        public void Replace(string tokenisedString, string value)
+        public string Replace(string tokenisedString, string value)
         {
             var builder = new StringBuilder();
-            builder.Append(tokenisedString.Substring(Start, Length));
+            builder.Append(tokenisedString.Substring(0, Start-3));
+            Console.WriteLine(builder.ToString());
             builder.Append(value);
-            builder.Append(tokenisedString.Substring(Start+Length));
+            Console.WriteLine(builder.ToString());
+            builder.Append(tokenisedString.Substring(Start+Length+6));
+            Console.WriteLine(builder.ToString());
+
+            return builder.ToString();
         }
 
         public void Replace(string tokenisedString, IDictionary<string, object> tokens)
