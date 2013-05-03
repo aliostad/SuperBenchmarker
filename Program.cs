@@ -15,6 +15,7 @@ namespace SuperBenchmarker
     {
         static void Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
 
             ThreadPool.SetMinThreads(200, 100);
             ThreadPool.SetMaxThreads(1000, 200);
@@ -66,7 +67,8 @@ namespace SuperBenchmarker
             Console.WriteLine("Max: " + (timeTakens.Max() / 10000) + "ms");
             Console.WriteLine("Min: " + (timeTakens.Min() / 10000) + "ms");
             Console.WriteLine("Avg: " + (timeTakens.Average() / 10000) + "ms");
-            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Gray;
+
         }
     }
 }

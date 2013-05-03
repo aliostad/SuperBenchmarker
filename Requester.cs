@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -13,19 +14,25 @@ namespace SuperBenchmarker
     {
         private CommandLineOptions _options;
         private TokenisedString _url;
-        private HttpClient _client = new HttpClient();
+        private HttpClient _client;
         private TemplateParser _templateParser;
         private IValueProvider _valueProvider;
 
         public Requester(CommandLineOptions options)
         {
+
+            _client = new HttpClient(new HttpClientHandler()
+                {
+                    Proxy = WebProxy.GetDefaultProxy(),
+                    UseDefaultCredentials = true
+                });
             _options = options;
             _url = new TokenisedString(options.Url);
             if (!string.IsNullOrEmpty(options.Template))
             {
                 _templateParser = new TemplateParser(File.ReadAllText(options.Template));
             }
-
+            
             _valueProvider = new NoValueProvider();
 
             if (!string.IsNullOrEmpty(_options.Plugin)) // plugin
@@ -52,24 +59,38 @@ namespace SuperBenchmarker
 
         public async Task NextAsync(int i)
         {
-            var request = BuildMessage(i);
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.Write(request.Method.Method + " ");
-            Console.WriteLine(request.RequestUri.ToString());
-            Console.ResetColor();
+            var request = BuildRequest(i);
+            if (_options.Verbose)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.Write(request.Method.Method + " ");
+                Console.WriteLine(request.RequestUri.ToString());
+                Console.ResetColor();
+            }
+           
             try
             {
                 var response = await _client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
+                if (_options.IsDryRun)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine(content);
+                    Console.ResetColor();
+                }
+
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                if(_options.Verbose)
+                    Console.WriteLine(e.ToString());
             }
+
+
 
         }
 
-        internal HttpRequestMessage BuildMessage(int i)
+        internal HttpRequestMessage BuildRequest(int i)
         {
             var dictionary = GetParams(i);
             var request = new HttpRequestMessage(new HttpMethod(_options.Method), _url.ToString(dictionary));
