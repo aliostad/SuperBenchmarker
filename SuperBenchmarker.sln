@@ -1,14 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBenchmarker", "SuperBenchmarker.csproj", "{A42D59E8-AB7F-4F47-B6F1-B6144DE89662}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{3AE58CA5-3413-4C6B-A7CA-D6D0407DA94D}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7BF70824-FC0E-4BCF-B447-865AB350DC19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBenchmarker", "src\SuperBenchmarker\SuperBenchmarker.csproj", "{A42D59E8-AB7F-4F47-B6F1-B6144DE89662}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C95CCA2A-2E14-42D8-BAFB-11B7AD7029E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperBenchmarker.Tests", "test\SuperBenchmarker.Tests\SuperBenchmarker.Tests.csproj", "{13C51FF0-0837-4448-89DD-994DF5A8DB2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,8 +26,16 @@ Global
 		{A42D59E8-AB7F-4F47-B6F1-B6144DE89662}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A42D59E8-AB7F-4F47-B6F1-B6144DE89662}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A42D59E8-AB7F-4F47-B6F1-B6144DE89662}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13C51FF0-0837-4448-89DD-994DF5A8DB2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13C51FF0-0837-4448-89DD-994DF5A8DB2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13C51FF0-0837-4448-89DD-994DF5A8DB2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13C51FF0-0837-4448-89DD-994DF5A8DB2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A42D59E8-AB7F-4F47-B6F1-B6144DE89662} = {7BF70824-FC0E-4BCF-B447-865AB350DC19}
+		{13C51FF0-0837-4448-89DD-994DF5A8DB2E} = {C95CCA2A-2E14-42D8-BAFB-11B7AD7029E0}
 	EndGlobalSection
 EndGlobal

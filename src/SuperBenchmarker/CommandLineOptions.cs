@@ -39,5 +39,8 @@ namespace SuperBenchmarker
         [Option('k', "cookies", Required = false, HelpText = "Outputs cookies")]
         public bool OutputCookies { get; set; }
 
+        [Option('x', "useProxy", Required = false, HelpText = "Whether to use default browser proxy. Useful for seeing request/response in Fiddler.")]
+        public bool UseProxy { get; set; }
+
     }
 }

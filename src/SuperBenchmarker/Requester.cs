@@ -21,11 +21,17 @@ namespace SuperBenchmarker
         public Requester(CommandLineOptions options)
         {
 
-            _client = new HttpClient(new HttpClientHandler()
-                {
-                    Proxy = WebProxy.GetDefaultProxy(),
-                    UseDefaultCredentials = true
-                });
+            var requestHandler = new WebRequestHandler()
+                                     {
+                                         UseCookies = false,
+                                         UseDefaultCredentials = true
+                                     };
+            if (options.UseProxy)
+            {
+                requestHandler.UseProxy = true;
+                requestHandler.Proxy = WebRequest.GetSystemWebProxy();
+            }
+            _client = new HttpClient(requestHandler);
             _options = options;
             _url = new TokenisedString(options.Url);
             if (!string.IsNullOrEmpty(options.Template))
@@ -115,7 +121,6 @@ namespace SuperBenchmarker
                         Console.WriteLine(state.Value);
                     }
                 }
-                Console.WriteLine(request.Headers.GetCookies().ToString());
                 Console.ResetColor();
             }
 
