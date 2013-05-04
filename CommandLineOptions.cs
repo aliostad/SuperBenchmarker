@@ -36,6 +36,8 @@ namespace SuperBenchmarker
         [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
         public bool Verbose { get; set; }
 
+        [Option('k', "cookies", Required = false, HelpText = "Outputs cookies")]
+        public bool OutputCookies { get; set; }
 
     }
 }

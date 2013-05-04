@@ -102,6 +102,23 @@ namespace SuperBenchmarker
                 }
                 
             }
+
+            if (_options.OutputCookies)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                foreach (var cookie in request.Headers.GetCookies())
+                {
+                    foreach (var state in cookie.Cookies)
+                    {
+                        Console.Write(state.Name);
+                        Console.Write(": ");
+                        Console.WriteLine(state.Value);
+                    }
+                }
+                Console.WriteLine(request.Headers.GetCookies().ToString());
+                Console.ResetColor();
+            }
+
             return request;
         }
 

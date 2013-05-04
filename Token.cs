@@ -16,11 +16,8 @@ namespace SuperBenchmarker
         {
             var builder = new StringBuilder();
             builder.Append(tokenisedString.Substring(0, Start-3));
-            Console.WriteLine(builder.ToString());
             builder.Append(value);
-            Console.WriteLine(builder.ToString());
-            builder.Append(tokenisedString.Substring(Start+Length+6));
-            Console.WriteLine(builder.ToString());
+            builder.Append(tokenisedString.Substring(Start+Length+3));
 
             return builder.ToString();
         }
