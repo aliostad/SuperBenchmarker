@@ -73,18 +73,34 @@ namespace SuperBenchmarker
                 Console.WriteLine(request.RequestUri.ToString());
                 Console.ResetColor();
             }
-           
+            
+            if (_options.OutputHeaders)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine(request.Headers.ToString());
+                Console.ResetColor();                
+            }
+
             try
             {
                 var response = await _client.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
-                if (_options.IsDryRun)
+
+                if (_options.OutputHeaders)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine(response.Headers.ToString());
+                    Console.ResetColor();
+                }
+
+                if (_options.IsDryRun && !_options.OnlyRequest)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine(content);
                     Console.ResetColor();
                 }
 
+                
             }
             catch (Exception e)
             {

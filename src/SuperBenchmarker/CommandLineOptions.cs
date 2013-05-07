@@ -42,5 +42,11 @@ namespace SuperBenchmarker
         [Option('x', "useProxy", Required = false, HelpText = "Whether to use default browser proxy. Useful for seeing request/response in Fiddler.")]
         public bool UseProxy { get; set; }
 
+        [Option('q', "onlyRequest", Required = false, HelpText = "In a dry-run (debug) mode shows only the request.")]
+        public bool OnlyRequest { get; set; }
+
+        [Option('h', "onlyRequest", Required = false, HelpText = "In a dry-run (debug) mode shows only the request.")]
+        public bool OutputHeaders { get; set; }
+
     }
 }
