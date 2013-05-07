@@ -123,6 +123,12 @@ namespace SuperBenchmarker
                     request.Headers.Add(h.Key, h.Value.ToString(dictionary));
                 }
                 
+                if (new[] {"post", "put", "delete"}.Any(x => x == _options.Method.ToLower()) &&
+                    _templateParser.Payload!=null &&
+                    _templateParser.Payload.Length>0)
+                {
+                    request.Content = new ByteArrayContent(_templateParser.Payload);
+                }
             }
 
             if (_options.OutputCookies)

@@ -58,6 +58,10 @@ namespace SuperBenchmarker
             get { return _headers; } 
         }
 
+        public byte[] Payload
+        {
+            get { return _payload; }
+        }
       
     }
 }
