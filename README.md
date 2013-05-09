@@ -13,8 +13,19 @@ Features include:
 
 ![screenshot](https://raw.github.com/aliostad/SuperBenchmarker/master/SuperBenchmarker2.png)
 
-<br/>
-Usage:<br/>
+### Install using chocolatey
+If you have installed chocolatey, you can install this by running
+
+```
+cinst SuperBenchmarker 
+```
+
+### Download
+You may download the latest binary from download [folder](https://github.com/aliostad/SuperBenchmarker/tree/master/download) in GitHub source.
+
+
+###Usage
+
 sb.exe -u url [-c concurrency] [-n numberOfRequests] [-m method] [-t template] [-p plugin] [-f file] [-d]  [-v]  [-k]  [-x]  [-q]  [-h]  [-?]<br/>
 Parameters:<br/>
  -u     Required. Target URL to call. Can include placeholders.<br/>
@@ -32,8 +43,8 @@ Parameters:<br/>
  -?     Optional. Displays this help. (boolean switch)<br/>
 <br/>
 
-Examples:<br/>
-<br/>
+###Examples
+
 -u http://google.com<br/>
 -u http://google.com -n 1000 -c 10<br/>
 -u http://google.com -n 1000 -c 10 -d (runs only once)<br/>
