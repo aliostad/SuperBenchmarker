@@ -65,7 +65,7 @@ namespace SuperBenchmarker
 -u http://google.com -n 1000 -c 10
 -u http://google.com -n 1000 -c 10 -d (runs only once)
 -u http://localhost/api/myApi/ -t template text (file contains headers to be sent for GET. format is same as HTTP request)
--u http://localhost/api/myApi/ -m POST -t template.txt (file contains headers to be sent for GET. format is same as HTTP request with double CRLF separating headers and payload)
+-u http://localhost/api/myApi/ -m POST -t template.txt (file contains headers to be sent for POST. format is same as HTTP request with double CRLF separating headers and payload)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt (values file is CSV and has a column for ID)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.xtx (values file is CSV and has a column for ID, also for all placeholders within the template file)
 -u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)
