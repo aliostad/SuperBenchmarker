@@ -11,6 +11,8 @@ Features include:
 * tracing and troubleshooting output to see request, headers, cookies, URL generated, etc
 * colourful commandline output making you feel a little bit better investigating performance bottlenecks
 
+[!screenshot](https://github.com/aliostad/SuperBenchmarke/raw/master/src/Superbenchmarker.2)
+
 <br/>
 Usage:<br/>
 sb.exe -u url [-c concurrency] [-n numberOfRequests] [-m method] [-t template] [-p plugin] [-f file] [-d]  [-v]  [-k]  [-x]  [-q]  [-h]  [-?]<br/>
