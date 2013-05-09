@@ -21,11 +21,13 @@ namespace SuperBenchmarker
             ThreadPool.SetMaxThreads(1000, 200);
 
             var commandLineOptions = new CommandLineOptions();
+            bool isHelp = args.Any(x=>x=="-?");
             var success = Parser.Default.ParseArguments(args, commandLineOptions);
 
-            if (!success)
+            if (!success || isHelp)
             {
-                Console.Error.WriteLine("error parsing command line");
+                if(!isHelp && args.Length>0)
+                    Console.Error.WriteLine("error parsing command line");
                 return;
             }
 

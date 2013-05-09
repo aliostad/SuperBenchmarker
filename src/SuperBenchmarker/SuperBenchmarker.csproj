@@ -58,7 +58,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandLineOptions.cs" />
+    <Compile Include="CommandOption.cs" />
     <Compile Include="CsvValueProvider.cs" />
+    <Compile Include="ExampleAttribute.cs" />
     <Compile Include="IValueProvider.cs" />
     <Compile Include="NoValueProvider.cs" />
     <Compile Include="Program.cs" />

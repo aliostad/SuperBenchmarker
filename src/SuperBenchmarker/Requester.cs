@@ -104,8 +104,14 @@ namespace SuperBenchmarker
             }
             catch (Exception e)
             {
-                if(_options.Verbose)
+
+                if (_options.Verbose || _options.IsDryRun)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(e.ToString());
+                    Console.ResetColor();                
+                }
+
             }
 
 
