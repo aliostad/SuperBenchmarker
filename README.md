@@ -11,7 +11,7 @@ Features include:
 * tracing and troubleshooting output to see request, headers, cookies, URL generated, etc
 * colourful commandline output making you feel a little bit better investigating performance bottlenecks
 
-[!screenshot](https://github.com/aliostad/SuperBenchmarker/blob/master/SuperBenchmarker2.png)
+![screenshot](https://github.com/aliostad/SuperBenchmarker/blob/master/SuperBenchmarker2.png)
 
 <br/>
 Usage:<br/>
