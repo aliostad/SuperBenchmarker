@@ -20,7 +20,7 @@ Parameters:<br/>
  -u     Required. Target URL to call. Can include placeholders.<br/>
  -c     Optional. Number of concurrent requests (default=1)<br/>
  -n     Optional. Total number of requests (default=100)<br/>
- -m     Optional. HTTP Method to use (default=GET)<br/><br/>
+ -m     Optional. HTTP Method to use (default=GET)<br/>
  -p     Optional. Name of the plugin (DLL) to replace placeholders. Should contain one class which implements IValueProvider. Must reside in the same folder.<br/>
  -f     Optional. Path to CSV file providing replacement values for the test<br/>
  -d     Optional. Runs a single dry run request to make sure all is good (boolean switch)<br/>
