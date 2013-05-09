@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SuperBenchmarker</id>
+    <version>0.1.0.0</version>
+    <title>SuperBenchmarker</title>
+    <authors>Ali Kheyrollahi</authors>
+    <owners>Ali Kheyrollahi</owners>
+    <projectUrl>https://github.com/aliostad/SuperBenchmarker</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A load generator command-line tool for testing websites and HTTP APIs</description>
+    <copyright>Copyright 2013</copyright>
+    <tags>aspnetwebapi http mvc webapi performance ab.exe benchmark benchmarking SuperBenchmarker</tags>
+  </metadata>
+  	<files>
+       <file src="..\..\bin\sb.exe" target="lib" />
+    </files>
+</package>
