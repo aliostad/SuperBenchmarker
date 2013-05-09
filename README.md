@@ -9,6 +9,7 @@ Features include:
 * ability to provide request template (both headers and payload) using a text file
 * ability to parameterise URL and template placeholders (doneted by {{{name}}}) using a CSV file or a plugin DLL
 * tracing and troubleshooting output to see request, headers, cookies, URL generated, etc
+* colourful commandline output making you feel a little bit better investigating performance bottlenecks
 
 <br/>
 Usage:<br/>
