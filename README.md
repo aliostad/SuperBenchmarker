@@ -14,7 +14,7 @@ Features include:
 ![screenshot](https://raw.github.com/aliostad/SuperBenchmarker/master/SuperBenchmarker2.png)
 
 ### Install using chocolatey
-If you have installed chocolatey, you can install this by running
+If you have installed chocolatey (if not [here](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line) is the instructions), you can install this by running
 
 ```
 cinst SuperBenchmarker 
