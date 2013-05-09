@@ -17,7 +17,7 @@ Features include:
 Usage:<br/>
 sb.exe -u url [-c concurrency] [-n numberOfRequests] [-m method] [-t template] [-p plugin] [-f file] [-d]  [-v]  [-k]  [-x]  [-q]  [-h]  [-?]<br/>
 Parameters:<br/>
- -u     Required. Target URL to call. Can include placeholders.<bre/>
+ -u     Required. Target URL to call. Can include placeholders.<br/>
  -c     Optional. Number of concurrent requests (default=1)<br/>
  -n     Optional. Total number of requests (default=100)<br/>
  -m     Optional. HTTP Method to use (default=GET)<br/><br/>
