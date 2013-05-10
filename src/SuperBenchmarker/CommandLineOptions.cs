@@ -71,6 +71,7 @@ namespace SuperBenchmarker
 -u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)
 -u http://google.com -h (shows headers)
 -u http://google.com -h -q (shows cookies) 
+-u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) 
 
 ";
         }
