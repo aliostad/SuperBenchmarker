@@ -24,19 +24,23 @@ namespace SuperBenchmarker
         {
             _encoding = encoding;
             var indexOfHeadersEnd = templateText.IndexOf("\r\n\r\n");
-            if(indexOfHeadersEnd<0)
-                Init(templateText, null);
+            if (indexOfHeadersEnd < 0)
+                Init(templateText);
             else
-                Init(templateText.Substring(0, indexOfHeadersEnd), templateText.Substring(indexOfHeadersEnd + 4));
+            {
+                Init(templateText.Substring(0, indexOfHeadersEnd));
+                _payload = Encoding.UTF8.GetBytes(templateText.Substring(indexOfHeadersEnd + 4));
+            }
+                
         }
 
         public TemplateParser(string headers, byte[] payload)
         {
             _payload = payload;
-            Init(headers, null);
+            Init(headers);
         }
 
-        private void Init(string headers, string payload)
+        private void Init(string headers)
         {
             _headers = new List<KeyValuePair<string, TokenisedString>>();
             var reader = new StringReader(headers);

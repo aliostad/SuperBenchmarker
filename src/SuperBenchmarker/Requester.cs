@@ -126,7 +126,7 @@ namespace SuperBenchmarker
             {
                 foreach (var h in _templateParser.Headers)
                 {
-                    request.Headers.Add(h.Key, h.Value.ToString(dictionary));
+                    request.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
                 }
                 
                 if (new[] {"post", "put", "delete"}.Any(x => x == _options.Method.ToLower()) &&
@@ -134,6 +134,10 @@ namespace SuperBenchmarker
                     _templateParser.Payload.Length>0)
                 {
                     request.Content = new ByteArrayContent(_templateParser.Payload);
+                    foreach (var h in _templateParser.Headers)
+                    {
+                        request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
+                    }
                 }
             }
 
