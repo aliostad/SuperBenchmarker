@@ -60,15 +60,25 @@ namespace SuperBenchmarker
                 Thread.Sleep(100);
             }
             stopwatch.Stop();
+            var ordered = timeTakens.OrderBy(x => x).ToArray();
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("---------------Finished!----------------");
             
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("TPS: " + (commandLineOptions.NumberOfRequests * 1000 / stopwatch.ElapsedMilliseconds));
+            Console.Write("TPS: " + (commandLineOptions.NumberOfRequests * 1000 / stopwatch.ElapsedMilliseconds));
+            Console.WriteLine(" (requests/second)");
             Console.WriteLine("Max: " + (timeTakens.Max() / 10000) + "ms");
             Console.WriteLine("Min: " + (timeTakens.Min() / 10000) + "ms");
             Console.WriteLine("Avg: " + (timeTakens.Average() / 10000) + "ms");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine();
+            Console.WriteLine("50% below " + (ordered[ordered.Length * 5 / 10])/10000 + "ms");
+            Console.WriteLine("60% below " + (ordered[ordered.Length * 6 / 10])/10000 + "ms");
+            Console.WriteLine("70% below " + (ordered[ordered.Length * 7 / 10])/10000 + "ms");
+            Console.WriteLine("80% below " + (ordered[ordered.Length * 8 / 10])/10000 + "ms");
+            Console.WriteLine("90% below " + (ordered[ordered.Length * 9 / 10])/10000 + "ms");
+
             Console.ForegroundColor = ConsoleColor.Gray;
 
         }
