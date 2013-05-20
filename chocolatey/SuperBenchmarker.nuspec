@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>SuperBenchmarker</id>
-    <version>0.1.2</version>
+    <version>0.1.3</version>
     <title>SuperBenchmarker</title>
     <authors>Ali Kheyrollahi</authors>
     <owners>Ali Kheyrollahi</owners>
@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>   
     <description>Superbenchmarker is a load generator command-line tool for testing websites and HTTP APIs and meant to become Apache Benchmark (ab.exe) on steriod.</description> 
     <summary>Load generator command-line tool for testing websites and HTTP APIs</summary>
-    <tags>superbenchmarker sb</tags>    
+    <tags>superbenchmarker sb benchmarking performance</tags>    
   </metadata>
   <files>
       <file src="..\download\*" target="tools" />

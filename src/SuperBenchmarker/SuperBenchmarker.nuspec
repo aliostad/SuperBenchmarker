@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SuperBenchmarker</id>
-    <version>0.1.2.0</version>
+    <version>0.1.3.0</version>
     <title>SuperBenchmarker</title>
     <authors>Ali Kheyrollahi</authors>
     <owners>Ali Kheyrollahi</owners>
@@ -13,6 +13,7 @@
     <tags>aspnetwebapi http mvc webapi performance ab.exe benchmark benchmarking SuperBenchmarker</tags>
   </metadata>
   	<files>
-       <file src="..\..\bin\sb.exe" target="lib" />
+       <file src="..\..\artifacts\sb.exe" target="lib" />
+       <file src="..\..\artifacts\sb.exe.config" target="lib" />
     </files>
 </package>

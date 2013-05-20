@@ -14,6 +14,9 @@ namespace SuperBenchmarker
         private string[] _lines;
         private const string CsvPattern = "(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)";
         private string[] _headers;
+        private const string RandomIdentifier = "###random###";
+        private Type[] _typesForRandom = null;
+        private Random _random = new Random();
 
         public CsvValueProvider(string fileName)
         {
@@ -27,15 +30,52 @@ namespace SuperBenchmarker
                 _headers[i] = match.Value;
                 i++;
             }
+
+            if (_lines.Length == 1)
+            {
+                _typesForRandom = new Type[_headers.Length];
+                for (int j = 0; j < _headers.Length; j++)
+                {
+                    _typesForRandom[j] = typeof (int);
+                }
+            }
+
         }
 
         public IDictionary<string, object> GetValues(int index)
+        {
+            if (_typesForRandom == null)
+            {
+                return GetFileValues(index);
+            }
+            else
+            {
+                return GetRandomValues(index);
+            }
+        }
+
+        private IDictionary<string, object> GetRandomValues(int index)
+        {
+            var dictionary = new Dictionary<string, object>();
+            object o = "";
+            for (int i = 0; i < _headers.Length; i++)
+            {
+                if (typeof (int) == _typesForRandom[i])
+                    o = _random.Next();
+
+                dictionary.Add(_headers[i],o);
+            }
+
+            return dictionary;
+        }
+
+        public IDictionary<string, object> GetFileValues(int index)
         {
             var lineNumber = (index % (_lines.Length - 1)) + 1;
             var matches = Regex.Matches(_lines[lineNumber], CsvPattern);
             int i = 0;
             var values = new string[matches.Count];
-            
+
             foreach (Match match in matches)
             {
                 values[i] = match.Value;

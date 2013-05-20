@@ -31,9 +31,15 @@
     <MSBuild Projects="@(AppProjFiles)" Targets="Rebuild" Properties="OutDir=%(BuildArtifactsDir.FullPath);Configuration=$(Configuration);SolutionDir=$(SolutionDir)" />
   </Target>
   <Target Name="IlMerge">
-    <Exec WorkingDirectory="$(SolutionDir)" Command="tools\ilmerge.exe /target:exe /out:bin\sb.exe /targetplatform:v4,C:\Windows\Microsoft.NET\Framework\v4.0.30319 artifacts\sb.exe artifacts\CommandLine.dll artifacts\Newtonsoft.Json.dll artifacts\System.Net.Http.Formatting.dll" />
+    <Exec WorkingDirectory="$(SolutionDir)" Command="tools\ilmerge.exe /target:exe /out:download\sb.exe /targetplatform:v4,C:\Windows\Microsoft.NET\Framework\v4.0.30319 artifacts\sb.exe artifacts\CommandLine.dll artifacts\Newtonsoft.Json.dll artifacts\System.Net.Http.Formatting.dll" />
   </Target>
-    <Target Name="Package">
+  <Target Name="CopyConfig">
+        <Copy
+            SourceFiles="@(BuildArtifactsDir)\sb.exe.config"
+            DestinationFolder="\download\sb.exe.config"
+        />
+   </Target>
+   <Target Name="Package">
     <Exec WorkingDirectory="%(NugetExeDir.FullPath)" Command="nuget.exe pack ..\src\SuperBenchmarker\SuperBenchmarker.nuspec  -OutputDirectory ..\artifacts\packages" />
   </Target>
   <Target Name="Publish">
