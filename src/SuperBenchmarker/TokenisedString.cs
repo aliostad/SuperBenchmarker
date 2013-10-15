@@ -23,7 +23,8 @@ namespace SuperBenchmarker
         public string ToString(IDictionary<string, object> tokens)
         {
             var s = _content;
-            _tokens.ForEach((t) => s = t.Replace(s, tokens[t.Name].ToString()));
+            _tokens.OrderByDescending(x => x.Start).ToList() // replace from the end
+                   .ForEach((t) => s = t.Replace(s, tokens[t.Name].ToString()));
             return s;
         }
 
