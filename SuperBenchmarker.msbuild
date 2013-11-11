@@ -18,8 +18,8 @@
     <NugetExeDir Include=".\.nuget\" />
   </ItemGroup>
 
-  <Target Name="Default" DependsOnTargets="Compile; IlMerge;Package" />
-  <Target Name="DefaultCI" DependsOnTargets="Compile; IlMerge; Package; Publish" />
+  <Target Name="Default" DependsOnTargets="Compile; CopyConfig; IlMerge; Package" />
+  <Target Name="DefaultCI" DependsOnTargets="Compile; CopyConfig; IlMerge; Package; Publish" />
   
   <Target Name="Clean">
     <RemoveDir Directories="@(BuildArtifactsDir)" />
@@ -35,8 +35,8 @@
   </Target>
   <Target Name="CopyConfig">
         <Copy
-            SourceFiles="@(BuildArtifactsDir)\sb.exe.config"
-            DestinationFolder="\download\sb.exe.config"
+            SourceFiles="%(BuildArtifactsDir.FullPath)\sb.exe.config"
+            DestinationFolder="$(SolutionDir)\download"
         />
    </Target>
    <Target Name="Package">
