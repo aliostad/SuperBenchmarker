@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace SuperBenchmarker
 
             ThreadPool.SetMinThreads(200, 100);
             ThreadPool.SetMaxThreads(1000, 200);
+            var statusCodes = new ConcurrentBag<HttpStatusCode>();
 
             var commandLineOptions = new CommandLineOptions();
             bool isHelp = args.Any(x=>x=="-?");
@@ -45,7 +47,7 @@ namespace SuperBenchmarker
                              (i) =>
                                  {
                                      var sw = Stopwatch.StartNew();
-                                     requester.Next(i);
+                                     statusCodes.Add(requester.Next(i));
                                      sw.Stop();
                                      timeTakens.Add(sw.ElapsedTicks);
                                      Interlocked.Increment(ref total);
@@ -64,7 +66,28 @@ namespace SuperBenchmarker
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("---------------Finished!----------------");
+
+            // ----- adding stats of statuses returned
+            var stats = statusCodes.GroupBy(x => x)
+                       .Select(y => new {Status = y.Key, Count = y.Count()}).OrderByDescending(z => z.Count);
+
+            foreach (var stat in stats)
+            {
+                int statusCode = (int) stat.Status;
+                if (statusCode >= 400 && statusCode < 600)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;                    
+                }
+
+                Console.WriteLine(string.Format("Status {0}:    {1}", statusCode, stat.Count));
+            }
             
+            Console.WriteLine();
+
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write("TPS: " + (commandLineOptions.NumberOfRequests * 1000 / stopwatch.ElapsedMilliseconds));
             Console.WriteLine(" (requests/second)");

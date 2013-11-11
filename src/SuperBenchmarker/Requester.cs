@@ -58,13 +58,16 @@ namespace SuperBenchmarker
 
         }
 
-        public void Next(int i)
+        public HttpStatusCode Next(int i)
         {
-            NextAsync(i).Wait();
+            return NextAsync(i).Result;
         }
 
-        public async Task NextAsync(int i)
+        public async Task<HttpStatusCode> NextAsync(int i)
         {
+
+            HttpStatusCode statusCode = HttpStatusCode.SeeOther;
+
             var request = BuildRequest(i);
             if (_options.Verbose)
             {
@@ -84,6 +87,7 @@ namespace SuperBenchmarker
             try
             {
                 var response = await _client.SendAsync(request);
+                statusCode = response.StatusCode;
                 var content = await response.Content.ReadAsStringAsync();
 
                 if (_options.OutputHeaders)
@@ -114,7 +118,7 @@ namespace SuperBenchmarker
 
             }
 
-
+            return statusCode;
 
         }
 
