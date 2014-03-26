@@ -16,14 +16,20 @@ namespace SuperBenchmarker
     {
         static void Main(string[] args)
         {
+
+          
+
             Console.ForegroundColor = ConsoleColor.Gray;
+
 
             ThreadPool.SetMinThreads(200, 100);
             ThreadPool.SetMaxThreads(1000, 200);
             var statusCodes = new ConcurrentBag<HttpStatusCode>();
 
+
             var commandLineOptions = new CommandLineOptions();
             bool isHelp = args.Any(x=>x=="-?");
+
             var success = Parser.Default.ParseArguments(args, commandLineOptions);
 
             if (!success || isHelp)
@@ -102,7 +108,7 @@ namespace SuperBenchmarker
             Console.WriteLine("80% below " + (ordered[ordered.Length * 8 / 10])/10000 + "ms");
             Console.WriteLine("90% below " + (ordered[ordered.Length * 9 / 10])/10000 + "ms");
 
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ResetColor();
 
         }
     }
