@@ -17,7 +17,7 @@ namespace SuperBenchmarker
         private HttpClient _client;
         private TemplateParser _templateParser;
         private IValueProvider _valueProvider;
-
+        private RandomValueProvider _randomValueProvider;
         public Requester(CommandLineOptions options)
         {
 
@@ -37,8 +37,13 @@ namespace SuperBenchmarker
             if (!string.IsNullOrEmpty(options.Template))
             {
                 _templateParser = new TemplateParser(File.ReadAllText(options.Template));
+                _randomValueProvider = new RandomValueProvider(
+                    new[] { _url }.Concat(_templateParser.Headers.Select(x => x.Value)).ToArray());
             }
-            
+            else
+            {
+                _randomValueProvider = new RandomValueProvider(_url);
+            }
             _valueProvider = new NoValueProvider();
 
             if (!string.IsNullOrEmpty(_options.Plugin)) // plugin
@@ -58,17 +63,20 @@ namespace SuperBenchmarker
 
         }
 
-        public HttpStatusCode Next(int i)
+        public HttpStatusCode Next(int i, out IDictionary<string, object> parameters)
         {
-            return NextAsync(i).Result;
+            var result = NextAsync(i).Result;
+            parameters = result.Item1;
+            return result.Item2;
         }
 
-        public async Task<HttpStatusCode> NextAsync(int i)
+        public async Task<Tuple<IDictionary<string, object>, HttpStatusCode>> NextAsync(int i)
         {
 
             HttpStatusCode statusCode = HttpStatusCode.SeeOther;
 
-            var request = BuildRequest(i);
+            IDictionary<string, object> parameters;
+            var request = BuildRequest(i, out parameters);
             if (_options.Verbose)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -118,13 +126,14 @@ namespace SuperBenchmarker
 
             }
 
-            return statusCode;
+            return new Tuple<IDictionary<string, object>, HttpStatusCode>(parameters, statusCode);
 
         }
 
-        internal HttpRequestMessage BuildRequest(int i)
+        internal HttpRequestMessage BuildRequest(int i, out IDictionary<string, object> parameters)
         {
             var dictionary = GetParams(i);
+            parameters = dictionary;
             var request = new HttpRequestMessage(new HttpMethod(_options.Method), _url.ToString(dictionary));
             if (_templateParser != null)
             {
@@ -165,8 +174,12 @@ namespace SuperBenchmarker
 
         private IDictionary<string, object> GetParams(int i)
         {
-            return _valueProvider.GetValues(i);
+            var dictionary = _valueProvider.GetValues(i);
+            foreach (var kv in _randomValueProvider.GetValues(i))
+            {
+                dictionary[kv.Key] = kv.Value; // overwrite
+            }
+            return dictionary;
         }
-
     }
 }

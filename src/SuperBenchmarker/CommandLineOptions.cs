@@ -27,6 +27,9 @@ namespace SuperBenchmarker
         [Option('p', "plugin", Required = false, HelpText = "Name of the plugin (DLL) to replace placeholders. Should contain one class which implements IValueProvider. Must reside in the same folder.")]
         public string Plugin { get; set; }
 
+        [Option('l', "logfile", Required = false, HelpText = "Path to the log file storing run stats", DefaultValue = "run.log")]
+        public string LogFile { get; set; }
+
         [Option('f', "file", Required = false, HelpText = "Path to CSV file providing replacement values for the test")]
         public string ValuesFile { get; set; }
 
@@ -69,6 +72,7 @@ namespace SuperBenchmarker
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt (values file is CSV and has a column for ID)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.xtx (values file is CSV and has a column for ID, also for all placeholders within the template file)
 -u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)
+-u http://localhost/api/myApi/{{{ID:RAND_INTEGER:[1000:2000]}}}  generates random integer for the field ID with the raneg 1000-2000
 -u http://google.com -h (shows headers)
 -u http://google.com -h -q (shows cookies) 
 -u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) 

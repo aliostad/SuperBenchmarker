@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SuperBenchmarker
 {
-    class Token
+    public class Token
     {
         public string Name { get; set; }
         public int Start { get; set; }

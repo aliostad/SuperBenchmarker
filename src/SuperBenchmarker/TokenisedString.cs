@@ -20,10 +20,15 @@ namespace SuperBenchmarker
             _tokens = FindTokens(content);
         }
 
+        public List<Token> Tokens
+        {
+            get { return _tokens; }
+        }
+
         public string ToString(IDictionary<string, object> tokens)
         {
             var s = _content;
-            _tokens.OrderByDescending(x => x.Start).ToList() // replace from the end
+            Tokens.OrderByDescending(x => x.Start).ToList() // replace from the end
                    .ForEach((t) => s = t.Replace(s, tokens[t.Name].ToString()));
             return s;
         }

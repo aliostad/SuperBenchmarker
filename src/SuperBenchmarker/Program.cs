@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -21,11 +22,9 @@ namespace SuperBenchmarker
 
             Console.ForegroundColor = ConsoleColor.Gray;
 
-
             ThreadPool.SetMinThreads(200, 100);
             ThreadPool.SetMaxThreads(1000, 200);
             var statusCodes = new ConcurrentBag<HttpStatusCode>();
-
 
             var commandLineOptions = new CommandLineOptions();
             bool isHelp = args.Any(x=>x=="-?");
@@ -41,6 +40,7 @@ namespace SuperBenchmarker
 
 
             var requester = new Requester(commandLineOptions);
+            var writer = new StreamWriter(commandLineOptions.LogFile){AutoFlush = true};
             var stopwatch = Stopwatch.StartNew();
             var timeTakens = new ConcurrentBag<double>();
             int total = 0;
@@ -53,10 +53,14 @@ namespace SuperBenchmarker
                              (i) =>
                                  {
                                      var sw = Stopwatch.StartNew();
-                                     statusCodes.Add(requester.Next(i));
+                                     IDictionary<string, object> parameters;
+                                     var statusCode = requester.Next(i, out parameters);
                                      sw.Stop();
+                                     statusCodes.Add(statusCode);
                                      timeTakens.Add(sw.ElapsedTicks);
-                                     Interlocked.Increment(ref total);
+                                     var n = Interlocked.Increment(ref total);
+                                     Task.Run( () =>
+                                        WriteLine(writer, n, (int)statusCode, sw.ElapsedMilliseconds, parameters));                                     
                                      if(!commandLineOptions.Verbose)
                                         Console.Write("\r" + total);
                                  }
@@ -94,22 +98,51 @@ namespace SuperBenchmarker
             
             Console.WriteLine();
 
+
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write("TPS: " + (commandLineOptions.NumberOfRequests * 1000 / stopwatch.ElapsedMilliseconds));
             Console.WriteLine(" (requests/second)");
-            Console.WriteLine("Max: " + (timeTakens.Max() / 10000) + "ms");
-            Console.WriteLine("Min: " + (timeTakens.Min() / 10000) + "ms");
-            Console.WriteLine("Avg: " + (timeTakens.Average() / 10000) + "ms");
+            Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
+            Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");
+            Console.WriteLine("Avg: " + (timeTakens.Average() * 1000 / Stopwatch.Frequency) + "ms");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine();
-            Console.WriteLine("50% below " + (ordered[ordered.Length * 5 / 10])/10000 + "ms");
-            Console.WriteLine("60% below " + (ordered[ordered.Length * 6 / 10])/10000 + "ms");
-            Console.WriteLine("70% below " + (ordered[ordered.Length * 7 / 10])/10000 + "ms");
-            Console.WriteLine("80% below " + (ordered[ordered.Length * 8 / 10])/10000 + "ms");
-            Console.WriteLine("90% below " + (ordered[ordered.Length * 9 / 10])/10000 + "ms");
+            Console.WriteLine("50% below " + (ordered[ordered.Length * 5 / 10])* 1000 / Stopwatch.Frequency + "ms");
+            Console.WriteLine("60% below " + (ordered[ordered.Length * 6 / 10])* 1000 / Stopwatch.Frequency + "ms");
+            Console.WriteLine("70% below " + (ordered[ordered.Length * 7 / 10])* 1000 / Stopwatch.Frequency + "ms");
+            Console.WriteLine("80% below " + (ordered[ordered.Length * 8 / 10])* 1000 / Stopwatch.Frequency + "ms");
+            Console.WriteLine("90% below " + (ordered[ordered.Length * 9 / 10])* 1000 / Stopwatch.Frequency + "ms");
 
             Console.ResetColor();
 
+        }
+
+        private static void WriteLine(StreamWriter writer, 
+            int n,
+            int statusCode, 
+            long millis, 
+            IDictionary<string, object> parameters)
+        {
+            lock (writer)
+            {
+                try
+                {
+                    var s = string.Join("\t", new[]
+                    {
+                        n.ToString(),
+                        statusCode.ToString(),
+                        millis.ToString(),
+                    }.Concat(parameters.Select(x => x.Key + "=" + x.Value)));
+
+                    writer.WriteLine(s);
+                }
+                catch (Exception e)
+                {
+                    // not to throw UNOBSERVED EXCEPTION
+                    Trace.TraceWarning(e.ToString());
+                }
+                
+            }
         }
     }
 }

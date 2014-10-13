@@ -43,6 +43,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="RandomGen">
+      <HintPath>..\..\packages\RandomGen.0.2.0\lib\net40\RandomGen.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
@@ -65,6 +68,7 @@
     <Compile Include="NoValueProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RandomValueProvider.cs" />
     <Compile Include="Requester.cs" />
     <Compile Include="TemplateParser.cs" />
     <Compile Include="Token.cs" />
