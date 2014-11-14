@@ -3,6 +3,8 @@ SuperBenchmarker
 
 Superbenchmarker is a load generator command-line tool for testing websites and HTTP APIs and meant to become Apache Benchmark (ab.exe) on steriod. **To run it you need .NET 4.5.**
 
+Visit [Wiki](https://github.com/aliostad/SuperBenchmarker/wiki)
+
 Features include:
 
 * ability to do POST, PUT and DELETE as well as GET
