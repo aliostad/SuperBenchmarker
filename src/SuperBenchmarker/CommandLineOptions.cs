@@ -39,6 +39,9 @@ namespace SuperBenchmarker
         [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
         public bool Verbose { get; set; }
 
+        [Option('b', "verbose", Required = false, HelpText = "Tokenise the body")]
+        public bool TokeniseBody { get; set; }
+
         [Option('k', "cookies", Required = false, HelpText = "Outputs cookies")]
         public bool OutputCookies { get; set; }
 
@@ -70,7 +73,8 @@ namespace SuperBenchmarker
 -u http://localhost/api/myApi/ -t template text (file contains headers to be sent for GET. format is same as HTTP request)
 -u http://localhost/api/myApi/ -m POST -t template.txt (file contains headers to be sent for POST. format is same as HTTP request with double CRLF separating headers and payload)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt (values file is CSV and has a column for ID)
--u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.xtx (values file is CSV and has a column for ID, also for all placeholders within the template file)
+-u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.txt (values file is CSV and has a column for ID, also for all placeholders within the template file)
+-u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t templateWithParameterisedBody.txt -b (values file is CSV and has a column for ID, also for all placeholders within the template file. Body is text and has placeholders to be replaced)
 -u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)
 -u http://localhost/api/myApi/{{{ID:RAND_INTEGER:[1000:2000]}}}  generates random integer for the field ID with the raneg 1000-2000
 -u http://google.com -h (shows headers)

@@ -13,6 +13,8 @@ namespace SuperBenchmarker
         private readonly Encoding _encoding;
         private byte[] _payload;
         private List<KeyValuePair<string, TokenisedString>> _headers = new List<KeyValuePair<string, TokenisedString>>();
+        private string _stringBody = null;
+        private TokenisedString _tokenisedBody = null;
 
         public TemplateParser(string templateText)
             : this(templateText, Encoding.UTF8)
@@ -29,7 +31,9 @@ namespace SuperBenchmarker
             else
             {
                 Init(templateText.Substring(0, indexOfHeadersEnd));
-                _payload = Encoding.UTF8.GetBytes(templateText.Substring(indexOfHeadersEnd + 4));
+                _stringBody = templateText.Substring(indexOfHeadersEnd + 4);
+                _payload = Encoding.UTF8.GetBytes(_stringBody);
+                _tokenisedBody = new TokenisedString(_stringBody);
             }
                 
         }
@@ -62,10 +66,15 @@ namespace SuperBenchmarker
             get { return _headers; } 
         }
 
+        public TokenisedString TextBody
+        {
+            get { return _tokenisedBody; } 
+        }
+
         public byte[] Payload
         {
             get { return _payload; }
         }
-      
+
     }
 }

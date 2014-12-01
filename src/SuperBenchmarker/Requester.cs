@@ -72,7 +72,6 @@ namespace SuperBenchmarker
 
         public async Task<Tuple<IDictionary<string, object>, HttpStatusCode>> NextAsync(int i)
         {
-
             HttpStatusCode statusCode = HttpStatusCode.SeeOther;
 
             IDictionary<string, object> parameters;
@@ -146,7 +145,12 @@ namespace SuperBenchmarker
                     _templateParser.Payload!=null &&
                     _templateParser.Payload.Length>0)
                 {
-                    request.Content = new ByteArrayContent(_templateParser.Payload);
+                    if (_templateParser.TextBody == null)
+                        request.Content = new ByteArrayContent(_templateParser.Payload);
+                    else
+                        request.Content =
+                            new ByteArrayContent(Encoding.UTF8.GetBytes(_templateParser.TextBody.ToString(dictionary)));
+
                     foreach (var h in _templateParser.Headers)
                     {
                         request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
