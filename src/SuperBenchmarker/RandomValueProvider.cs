@@ -11,7 +11,7 @@ namespace SuperBenchmarker
     public class RandomValueProvider : IValueProvider
     {
         private const string Prefix = "RAND_";
-        internal const string NamePattern = @"^[A-Za-z_0-9]+\:RAND_(STRING|DATE|DATETIME|DATETIMEOFFSET|INTEGER|DOUBLE|NAME)(?:\:\[([^:]+)\:([^]]+)\])?$";
+        internal const string NamePattern = @"^[A-Za-z_0-9]+\:RAND_(STRING|DATE|DATETIME|DATETIMEOFFSET|INTEGER|DOUBLE|NAME|GUID)(?:\:\[([^:]+)\:([^]]+)\])?$";
         private class RandomTypes
         {
             public const string RandomString = "STRING";
