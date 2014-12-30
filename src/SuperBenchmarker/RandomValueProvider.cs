@@ -21,6 +21,7 @@ namespace SuperBenchmarker
             public const string RandomInteger = "INTEGER";
             public const string RandomDouble = "DOUBLE";
             public const string RandomName = "NAME";
+            public const string RandomGuid = "GUID";
 
            
         }
@@ -81,7 +82,8 @@ namespace SuperBenchmarker
                 case RandomTypes.RandomDateTimeOffset:
                     var dates3 = GetRandomDateTime(match.Groups[2].Value, match.Groups[3].Value);
                     return () => dates3().ToString("O");
-
+                case RandomTypes.RandomGuid:
+                    return () => Guid.NewGuid();
                 default:
                     throw new NotSupportedException(match.Groups[1].Value);
             }
