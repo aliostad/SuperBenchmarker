@@ -57,6 +57,10 @@ namespace SuperBenchmarker
                                      IDictionary<string, object> parameters;
                                      var statusCode = requester.Next(i, out parameters);
                                      sw.Stop();
+                                     if (commandLineOptions.DelayInMillisecond > 0)
+                                     {
+                                         Thread.Sleep(commandLineOptions.DelayInMillisecond);
+                                     }
                                      statusCodes.Add(statusCode);
                                      timeTakens.Add(sw.ElapsedTicks);
                                      var n = Interlocked.Increment(ref total);
@@ -103,7 +107,7 @@ namespace SuperBenchmarker
 
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("TPS: " + (commandLineOptions.NumberOfRequests * 1000 / stopwatch.ElapsedMilliseconds));
+                Console.Write("TPS: " + Math.Round(commandLineOptions.NumberOfRequests * 1000f / stopwatch.ElapsedMilliseconds, 1));
                 Console.WriteLine(" (requests/second)");
                 Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
                 Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");

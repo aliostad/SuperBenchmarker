@@ -47,14 +47,18 @@ Parameters:<br/>
 
 ###Examples
 
--u http://google.com<br/>
--u http://google.com -n 1000 -c 10<br/>
--u http://google.com -n 1000 -c 10 -d (runs only once)<br/>
--u http://localhost/api/myApi/ -t template text (file contains headers to be sent for GET. format is same as HTTP request)<br/>
--u http://localhost/api/myApi/ -m POST -t template.txt (file contains headers to be sent for POST. format is same as HTTP request with double CRLF separating headers and payload)<br/>
--u http://localhost/api/myApi/{{{ID}}} -f values.txt (values file is CSV and has a column for ID)<br>
--u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)<br/>
--u http://google.com -h (shows headers)<br/>
--u http://google.com -h -q (shows cookies)<br/>
--u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) <br/>
+-u http://google.com
+-u http://google.com -n 1000 -c 10
+-u http://google.com -n 1000 -c 10 -d (runs only once)
+-u http://localhost/api/myApi/ -t template text (file contains headers to be sent for GET. format is same as HTTP request)
+-u http://localhost/api/myApi/ -m POST -t template.txt (file contains headers to be sent for POST. format is same as HTTP request with double CRLF separating headers and payload)
+-u http://localhost/api/myApi/{{{ID}}} -f values.txt (values file is CSV and has a column for ID)
+-u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.txt (values file is CSV and has a column for ID, also for all placeholders within the template file)
+-u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t templateWithParameterisedBody.txt -b (values file is CSV and has a column for ID, also for all placeholders within the template file. Body is text and has placeholders to be replaced)
+-u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)
+-u http://localhost/api/myApi/{{{ID:RAND_INTEGER:[1000:2000]}}}  generates random integer for the field ID with the raneg 1000-2000
+-u http://google.com -h (shows headers)
+-u http://google.com -h -q (shows cookies) 
+-u http://google.com -n 1000 -c 1 -y 500 (send requests with a delay of 500ms) 
+-u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) 
 

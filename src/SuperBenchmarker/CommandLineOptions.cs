@@ -15,6 +15,9 @@ namespace SuperBenchmarker
         [Option('n', "numberOfRequests", Required = false, HelpText = "Total number of requests", DefaultValue = 100)]
         public int NumberOfRequests { get; set; }
 
+        [Option('y', "delayInMillisecond", Required = false, HelpText = "Delay in millisecond", DefaultValue = 0)]
+        public int DelayInMillisecond { get; set; }
+
         [Option('u', "url", Required = true, HelpText = "Target URL to call. Can include placeholders.")]
         public string Url { get; set; }
 
@@ -39,7 +42,7 @@ namespace SuperBenchmarker
         [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
         public bool Verbose { get; set; }
 
-        [Option('b', "verbose", Required = false, HelpText = "Tokenise the body")]
+        [Option('b', "tokeniseBody", Required = false, HelpText = "Tokenise the body")]
         public bool TokeniseBody { get; set; }
 
         [Option('k', "cookies", Required = false, HelpText = "Outputs cookies")]
@@ -79,6 +82,7 @@ namespace SuperBenchmarker
 -u http://localhost/api/myApi/{{{ID:RAND_INTEGER:[1000:2000]}}}  generates random integer for the field ID with the raneg 1000-2000
 -u http://google.com -h (shows headers)
 -u http://google.com -h -q (shows cookies) 
+-u http://google.com -n 1000 -c 1 -y 500 (send requests with a delay of 500ms) 
 -u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) 
 
 ";

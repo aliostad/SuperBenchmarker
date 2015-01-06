@@ -99,7 +99,7 @@ namespace SuperBenchmarker
 
                 if (_options.OutputHeaders)
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine(response.Headers.ToString());
                     Console.ResetColor();
                 }
