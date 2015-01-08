@@ -73,7 +73,7 @@ namespace SuperBenchmarker
         public async Task<Tuple<IDictionary<string, object>, HttpStatusCode>> NextAsync(int i)
         {
             HttpStatusCode statusCode = HttpStatusCode.SeeOther;
-
+            string textContent = string.Empty;
             IDictionary<string, object> parameters;
             var request = BuildRequest(i, out parameters);
             if (_options.Verbose)
@@ -95,7 +95,23 @@ namespace SuperBenchmarker
             {
                 var response = await _client.SendAsync(request);
                 statusCode = response.StatusCode;
-                var content = await response.Content.ReadAsStringAsync();
+                if (response.Content != null)
+                {
+                    var content = await response.Content.ReadAsByteArrayAsync();
+                    if (_options.SaveResponses)
+                    {
+                        File.WriteAllBytes(Path.Combine(_options.ResponseFolder, (i+1).ToString() + 
+                            GetExtensionFromContentType(response.Content.Headers.ContentType.MediaType)), content);
+                    }
+                    try
+                    {
+                        textContent = Encoding.UTF8.GetString(content);
+                    }
+                    catch
+                    {
+                        // ignore !!
+                    }    
+                }
 
                 if (_options.OutputHeaders)
                 {
@@ -107,7 +123,7 @@ namespace SuperBenchmarker
                 if (_options.IsDryRun && !_options.OnlyRequest)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine(content);
+                    Console.WriteLine(textContent);
                     Console.ResetColor();
                 }
 
@@ -127,6 +143,22 @@ namespace SuperBenchmarker
 
             return new Tuple<IDictionary<string, object>, HttpStatusCode>(parameters, statusCode);
 
+        }
+
+        private static string GetExtensionFromContentType(string contentType)
+        {
+            switch (contentType)
+            {
+                case "application/xml":
+                    return ".xml";
+                case "application/javascript":
+                case "text/javascript":
+                    return ".json";
+                case "text/plain":
+                    return ".txt";
+                default:
+                    return ".bin";
+            }
         }
 
         internal HttpRequestMessage BuildRequest(int i, out IDictionary<string, object> parameters)

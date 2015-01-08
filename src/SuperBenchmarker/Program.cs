@@ -34,7 +34,7 @@ namespace SuperBenchmarker
             if (!success || isHelp)
             {
                 if(!isHelp && args.Length>0)
-                    Console.Error.WriteLine("error parsing command line");
+                    ConsoleWriteLine(ConsoleColor.Red, "error parsing command line");
                 return;
             }
 
@@ -44,6 +44,17 @@ namespace SuperBenchmarker
                 var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = true };
                 var stopwatch = Stopwatch.StartNew();
                 var timeTakens = new ConcurrentBag<double>();
+                if (commandLineOptions.SaveResponses)
+                {
+                    if (string.IsNullOrEmpty(commandLineOptions.ResponseFolder))
+                    {
+                        commandLineOptions.ResponseFolder = Path.Combine(Environment.CurrentDirectory, "Responses");                        
+                    }
+
+                    if (!Directory.Exists(commandLineOptions.ResponseFolder))
+                        Directory.CreateDirectory(commandLineOptions.ResponseFolder);
+                }
+
                 int total = 0;
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 var result = Parallel.For(0, commandLineOptions.IsDryRun ? 1 : commandLineOptions.NumberOfRequests,
@@ -81,8 +92,8 @@ namespace SuperBenchmarker
                                         orderby x
                                         select x).ToArray<double>();
                 Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine("---------------Finished!----------------");
+
+                ConsoleWriteLine(ConsoleColor.Magenta , "---------------Finished!----------------");
 
                 // ----- adding stats of statuses returned
                 var stats = statusCodes.GroupBy(x => x)
@@ -93,14 +104,13 @@ namespace SuperBenchmarker
                     int statusCode = (int)stat.Status;
                     if (statusCode >= 400 && statusCode < 600)
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        ConsoleWriteLine(ConsoleColor.Red, string.Format("Status {0}:    {1}", statusCode, stat.Count));
                     }
                     else
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
+                        ConsoleWriteLine(ConsoleColor.Green, string.Format("Status {0}:    {1}", statusCode, stat.Count));
                     }
 
-                    Console.WriteLine(string.Format("Status {0}:    {1}", statusCode, stat.Count));
                 }
 
                 Console.WriteLine();
@@ -161,6 +171,22 @@ namespace SuperBenchmarker
                 }
                 
             }
+        }
+
+        internal static void ConsoleWrite(ConsoleColor color, string value, params object[] args)
+        {
+            var foregroundColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(value, args);
+            Console.ForegroundColor = foregroundColor;
+        }
+
+        internal static void ConsoleWriteLine(ConsoleColor color, string value, params object[] args)
+        {
+            var foregroundColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.WriteLine(value, args);
+            Console.ForegroundColor = foregroundColor;
         }
     }
 }

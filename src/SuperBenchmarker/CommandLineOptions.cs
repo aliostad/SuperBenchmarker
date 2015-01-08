@@ -57,6 +57,12 @@ namespace SuperBenchmarker
         [Option('h', "headers", Required = false, HelpText = "Displays headers for request and response.")]
         public bool OutputHeaders { get; set; }
 
+        [Option('z', "saveResponses", Required = false, HelpText = "saves responses in -w parameter or if not provided in\\response_<timestamp>")]
+        public bool SaveResponses { get; set; }
+
+        [Option('w', "responsesFolder", Required = false, HelpText = "folder to save responses in if and only if -w parameter is set")]
+        public string ResponseFolder { get; set; }
+
         [Option('?', "help", Required = false, HelpText = "Displays this help.")]
         public bool IsHelp { get; set; }
 
