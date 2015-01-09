@@ -90,6 +90,8 @@ namespace SuperBenchmarker
 -u http://google.com -h -q (shows cookies) 
 -u http://google.com -n 1000 -c 1 -y 500 (send requests with a delay of 500ms) 
 -u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) 
+-u http://google.com -z (stores responses under response folder in the working directory. Creates folder if does not exist)
+-u http://google.com -z -w c:\temp\perfrun1 (stores responses in c:\temp\perfrun1. Creates folder if does not exist)
 
 ";
         }

@@ -18,7 +18,8 @@ namespace SuperBenchmarker
         static void Main(string[] args)
         {
 
-          
+            // to cover our back for all those fire and forgets
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             Console.ForegroundColor = ConsoleColor.Gray;
 
@@ -27,13 +28,13 @@ namespace SuperBenchmarker
             var statusCodes = new ConcurrentBag<HttpStatusCode>();
 
             var commandLineOptions = new CommandLineOptions();
-            bool isHelp = args.Any(x=>x=="-?");
+            bool isHelp = args.Any(x => x == "-?");
 
             var success = Parser.Default.ParseArguments(args, commandLineOptions);
 
             if (!success || isHelp)
             {
-                if(!isHelp && args.Length>0)
+                if (!isHelp && args.Length > 0)
                     ConsoleWriteLine(ConsoleColor.Red, "error parsing command line");
                 return;
             }
@@ -48,7 +49,7 @@ namespace SuperBenchmarker
                 {
                     if (string.IsNullOrEmpty(commandLineOptions.ResponseFolder))
                     {
-                        commandLineOptions.ResponseFolder = Path.Combine(Environment.CurrentDirectory, "Responses");                        
+                        commandLineOptions.ResponseFolder = Path.Combine(Environment.CurrentDirectory, "Responses");
                     }
 
                     if (!Directory.Exists(commandLineOptions.ResponseFolder))
@@ -75,6 +76,8 @@ namespace SuperBenchmarker
                                      statusCodes.Add(statusCode);
                                      timeTakens.Add(sw.ElapsedTicks);
                                      var n = Interlocked.Increment(ref total);
+
+                                     // fire and forget not to affect time taken or TPS
                                      Task.Run(() =>
                                         WriteLine(writer, n, (int)statusCode, sw.ElapsedMilliseconds, parameters));
                                      if (!commandLineOptions.Verbose)
@@ -93,7 +96,7 @@ namespace SuperBenchmarker
                                         select x).ToArray<double>();
                 Console.WriteLine();
 
-                ConsoleWriteLine(ConsoleColor.Magenta , "---------------Finished!----------------");
+                ConsoleWriteLine(ConsoleColor.Magenta, "---------------Finished!----------------");
 
                 // ----- adding stats of statuses returned
                 var stats = statusCodes.GroupBy(x => x)
@@ -124,14 +127,14 @@ namespace SuperBenchmarker
                 Console.WriteLine("Avg: " + (timeTakens.Average() * 1000 / Stopwatch.Frequency) + "ms");
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine();
-                Console.WriteLine("50%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(50M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("60%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(60M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("70%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(70M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("80%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(80M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("90%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(90M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("95%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(95M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("98%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(98M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("99%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  50%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(50M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  60%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(60M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  70%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(70M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  80%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(80M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  90%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(90M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  95%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(95M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  98%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(98M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                Console.WriteLine("  99%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
                 Console.WriteLine("99.9%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99.9M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
 
             }
@@ -141,14 +144,26 @@ namespace SuperBenchmarker
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(exception);
             }
- 
+
             Console.ResetColor();
         }
 
-        private static void WriteLine(StreamWriter writer, 
+        private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            try
+            {
+                Trace.WriteLine(e.Exception.ToString());
+            }
+            catch
+            {
+
+            }
+        }
+
+        private static void WriteLine(StreamWriter writer,
             int n,
-            int statusCode, 
-            long millis, 
+            int statusCode,
+            long millis,
             IDictionary<string, object> parameters)
         {
             lock (writer)
@@ -169,7 +184,7 @@ namespace SuperBenchmarker
                     // not to throw UNOBSERVED EXCEPTION
                     Trace.TraceWarning(e.ToString());
                 }
-                
+
             }
         }
 

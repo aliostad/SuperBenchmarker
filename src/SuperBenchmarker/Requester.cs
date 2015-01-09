@@ -100,8 +100,15 @@ namespace SuperBenchmarker
                     var content = await response.Content.ReadAsByteArrayAsync();
                     if (_options.SaveResponses)
                     {
-                        File.WriteAllBytes(Path.Combine(_options.ResponseFolder, (i+1).ToString() + 
-                            GetExtensionFromContentType(response.Content.Headers.ContentType.MediaType)), content);
+                        // fire and forget not to affect time taken or TPS
+                        Task.Run(() =>
+                            File.WriteAllBytes(Path.Combine(_options.ResponseFolder, (i + 1).ToString() +
+                                                                                     GetExtensionFromContentType(
+                                                                                         response.Content.Headers
+                                                                                             .ContentType.MediaType)),
+                                content)
+                            );
+
                     }
                     try
                     {
