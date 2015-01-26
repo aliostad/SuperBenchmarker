@@ -63,7 +63,7 @@
   <ItemGroup>
     <Compile Include="CommandLineOptions.cs" />
     <Compile Include="CommandOption.cs" />
-    <Compile Include="CsvValueProvider.cs" />
+    <Compile Include="SeparatedFileValueProvider.cs" />
     <Compile Include="ExampleAttribute.cs" />
     <Compile Include="IListExtensions.cs" />
     <Compile Include="IValueProvider.cs" />

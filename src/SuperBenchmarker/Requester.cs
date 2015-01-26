@@ -58,7 +58,8 @@ namespace SuperBenchmarker
             }
             else if (!string.IsNullOrEmpty(options.ValuesFile)) // csv values file
             {
-                _valueProvider = new CsvValueProvider(options.ValuesFile);
+                _valueProvider = new SeparatedFileValueProvider(options.ValuesFile, 
+                    options.IsTsv ? '\t' : ',');
             }
 
         }

@@ -8,28 +8,21 @@ using System.Threading.Tasks;
 
 namespace SuperBenchmarker
 {
-    public class CsvValueProvider: IValueProvider
+    public class SeparatedFileValueProvider: IValueProvider
     {
-        private string _fileName;
         private string[] _lines;
         private const string CsvPattern = "(?<=^|,)(\"(?:[^\"]|\"\")*\"|[^,]*)";
         private string[] _headers;
-        private const string RandomIdentifier = "###random###";
         private Type[] _typesForRandom = null;
         private Random _random = new Random();
+        private char _separator;
 
-        public CsvValueProvider(string fileName)
+        public SeparatedFileValueProvider(string fileName, char separator = ',')
         {
-            _fileName = fileName;
+            _separator = separator;
             _lines = File.ReadAllLines(fileName);
-            var matches = Regex.Matches(_lines[0], CsvPattern);
-            _headers = new string[matches.Count];
-            int i = 0;
-            foreach (Match match in matches)
-            {
-                _headers[i] = match.Value;
-                i++;
-            }
+
+            _headers = ParseLine(_lines[0]);
 
             if (_lines.Length == 1)
             {
@@ -40,6 +33,27 @@ namespace SuperBenchmarker
                 }
             }
 
+        }
+
+        private string[] ParseLine(string line)
+        {
+            // CSV deals with string qualifiers
+            if (_separator == ',')
+            {
+                var matches = Regex.Matches(_lines[0], CsvPattern);
+                var strings = new string[matches.Count];
+                int i = 0;
+                foreach (Match match in matches)
+                {
+                    strings[i] = match.Value;
+                    i++;
+                }
+                return strings;
+            }
+            else
+            {
+                return line.Split(new[] {_separator}, StringSplitOptions.RemoveEmptyEntries);
+            }
         }
 
         public IDictionary<string, object> GetValues(int index)
@@ -72,16 +86,8 @@ namespace SuperBenchmarker
         public IDictionary<string, object> GetFileValues(int index)
         {
             var lineNumber = (index % (_lines.Length - 1)) + 1;
-            var matches = Regex.Matches(_lines[lineNumber], CsvPattern);
-            int i = 0;
-            var values = new string[matches.Count];
 
-            foreach (Match match in matches)
-            {
-                values[i] = match.Value;
-                i++;
-            }
-
+            var values = ParseLine(_lines[lineNumber]);
             var result = new Dictionary<string, object>();
             for (int j = 0; j < values.Length; j++)
             {
