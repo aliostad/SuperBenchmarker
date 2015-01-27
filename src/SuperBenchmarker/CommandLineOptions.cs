@@ -36,7 +36,7 @@ namespace SuperBenchmarker
         [Option('f', "file", Required = false, HelpText = "Path to CSV file providing replacement values for the test")]
         public string ValuesFile { get; set; }
 
-        [Option('T', "TSV", Required = false, HelpText = "If you provide a tab-separated-file (TSV) with -f option instead of CSV")]
+        [Option('a', "TSV", Required = false, HelpText = "If you provide a tab-separated-file (TSV) with -f option instead of CSV")]
         public bool IsTsv { get; set; }
 
         [Option('d', "dryRun", Required = false, HelpText = "Runs a single dry run request to make sure all is good")]
@@ -86,7 +86,7 @@ namespace SuperBenchmarker
 -u http://localhost/api/myApi/ -m POST -t template.txt (file contains headers to be sent for POST. format is same as HTTP request with double CRLF separating headers and payload)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt (values file is CSV and has a column for ID)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.txt (values file is CSV and has a column for ID, also for all placeholders within the template file)
--u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.txt -T (using a TSV file instead of CSV)
+-u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t template.txt -a (using a TSV file instead of CSV)
 -u http://localhost/api/myApi/{{{ID}}} -f values.txt -m POST -t templateWithParameterisedBody.txt -b (values file is CSV and has a column for ID, also for all placeholders within the template file. Body is text and has placeholders to be replaced)
 -u http://localhost/api/myApi/{{{ID}}} -p myplugin.dll (has a public class implementing IValueProvider defined in this exe)
 -u http://localhost/api/myApi/{{{ID:RAND_INTEGER:[1000:2000]}}}  generates random integer for the field ID with the raneg 1000-2000
