@@ -56,7 +56,9 @@ namespace SuperBenchmarker
                         Directory.CreateDirectory(commandLineOptions.ResponseFolder);
                 }
 
+                ConsoleWriteLine(ConsoleColor.Yellow, "[Press C to stop the test]");
                 int total = 0;
+                var stop = new ConsoleKeyInfo();
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 var result = Parallel.For(0, commandLineOptions.IsDryRun ? 1 : commandLineOptions.NumberOfRequests,
                              new ParallelOptions()
@@ -65,6 +67,12 @@ namespace SuperBenchmarker
                              },
                                  (i) =>
                                  {
+
+                                     var source = new CancellationTokenSource(10);
+                                     Task.Run(() => stop = Console.ReadKey(true), source.Token);
+                                     if(stop.Key == ConsoleKey.C)
+                                         return;
+
                                      var sw = Stopwatch.StartNew();
                                      IDictionary<string, object> parameters;
                                      var statusCode = requester.Next(i, out parameters);
@@ -84,12 +92,7 @@ namespace SuperBenchmarker
                                          Console.Write("\r" + total);
                                  }
                     );
-
-
-                while (!result.IsCompleted)
-                {
-                    Thread.Sleep(100);
-                }
+               
                 stopwatch.Stop();
                 double[] orderedList = (from x in timeTakens
                                         orderby x
