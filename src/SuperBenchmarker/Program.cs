@@ -58,20 +58,32 @@ namespace SuperBenchmarker
 
                 ConsoleWriteLine(ConsoleColor.Yellow, "[Press C to stop the test]");
                 int total = 0;
+                bool disrupted = false;
                 var stop = new ConsoleKeyInfo();
                 Console.ForegroundColor = ConsoleColor.Cyan;
+                var source = new CancellationTokenSource(TimeSpan.FromDays(7));
+
+                Task.Run(() =>
+                {
+                    stop = Console.ReadKey(true);
+                    disrupted = true;
+                }, source.Token);
+
                 var result = Parallel.For(0, commandLineOptions.IsDryRun ? 1 : commandLineOptions.NumberOfRequests,
                              new ParallelOptions()
                              {
                                  MaxDegreeOfParallelism = commandLineOptions.Concurrency
                              },
-                                 (i) =>
+                                 (i, loopstate) =>
                                  {
-
-                                     var source = new CancellationTokenSource(10);
-                                     Task.Run(() => stop = Console.ReadKey(true), source.Token);
-                                     if(stop.Key == ConsoleKey.C)
-                                         return;
+                                     if (disrupted)
+                                     {
+                                         ConsoleWriteLine(ConsoleColor.Red, "...");
+                                         ConsoleWriteLine(ConsoleColor.Green, "Exiting.... please wait! (it might throw a few more requests)");
+                                         ConsoleWriteLine(ConsoleColor.Red, "");
+                                         loopstate.Stop();
+                                         source.Cancel();
+                                     }
 
                                      var sw = Stopwatch.StartNew();
                                      IDictionary<string, object> parameters;
@@ -123,7 +135,7 @@ namespace SuperBenchmarker
 
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("TPS: " + Math.Round(commandLineOptions.NumberOfRequests * 1000f / stopwatch.ElapsedMilliseconds, 1));
+                Console.Write("TPS: " + Math.Round(total * 1000f / stopwatch.ElapsedMilliseconds, 1));
                 Console.WriteLine(" (requests/second)");
                 Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
                 Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");
