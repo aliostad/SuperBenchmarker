@@ -40,7 +40,7 @@ namespace SuperBenchmarker
             // CSV deals with string qualifiers
             if (_separator == ',')
             {
-                var matches = Regex.Matches(_lines[0], CsvPattern);
+                var matches = Regex.Matches(line, CsvPattern);
                 var strings = new string[matches.Count];
                 int i = 0;
                 foreach (Match match in matches)
