@@ -32,6 +32,9 @@ namespace SuperBenchmarker
 
             var success = Parser.Default.ParseArguments(args, commandLineOptions);
 
+            var then = DateTime.Now;
+            ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then) ;
+
             if (!success || isHelp)
             {
                 if (!isHelp && args.Length > 0)
@@ -112,6 +115,8 @@ namespace SuperBenchmarker
                 Console.WriteLine();
 
                 ConsoleWriteLine(ConsoleColor.Magenta, "---------------Finished!----------------");
+                var now = DateTime.Now;
+                ConsoleWriteLine(ConsoleColor.DarkCyan, "Finished at {0} (took {1})", now, now - then);
 
                 // ----- adding stats of statuses returned
                 var stats = statusCodes.GroupBy(x => x)
@@ -132,7 +137,6 @@ namespace SuperBenchmarker
                 }
 
                 Console.WriteLine();
-
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write("TPS: " + Math.Round(total * 1000f / stopwatch.ElapsedMilliseconds, 1));
