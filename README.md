@@ -1,22 +1,22 @@
 SuperBenchmarker
 ================
 
-Superbenchmarker is a load generator command-line tool for testing websites and HTTP APIs and meant to become Apache Benchmark (ab.exe) on steriod. **To run it you need .NET 4.5.**
+Superbenchmarker is a load generator command-line tool for testing websites and HTTP APIs, and is meant to become Apache Benchmark (ab.exe) on steriods. **To run it you need .NET 4.5.**
 
 Visit [Wiki](https://github.com/aliostad/SuperBenchmarker/wiki)
 
 Features include:
 
 * ability to do POST, PUT and DELETE as well as GET
-* ability to provide request template (both headers and payload) using a text file
-* ability to parameterise URL and template placeholders (doneted by {{{name}}}) using a CSV file or a plugin DLL
-* tracing and troubleshooting output to see request, headers, cookies, URL generated, etc
-* colourful commandline output making you feel a little bit better investigating performance bottlenecks
+* ability to provide request templates (both headers and payload) using a text file
+* ability to parameterise URLs and template placeholders (denoted by {{{name}}}) using a CSV file or a plugin DLL
+* tracing and troubleshooting of output to see request, headers, cookies, URLs generated, etc
+* colourful commandline output to assist performance bottleneck investigation
 
 ![screenshot](https://raw.github.com/aliostad/SuperBenchmarker/master/SuperBenchmarker2.png)
 
 ### Install using chocolatey
-If you have installed chocolatey (if not [here](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line) is the instructions), you can install this by running
+If you have installed chocolatey (if not [here](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line) are the instructions), you can install this by running
 
 ```
 cinst SuperBenchmarker 
