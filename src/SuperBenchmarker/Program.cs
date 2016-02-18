@@ -191,6 +191,7 @@ namespace SuperBenchmarker
                 {
                     var s = string.Join("\t", new[]
                     {
+                        DateTimeOffset.UtcNow.ToString(),
                         n.ToString(),
                         statusCode.ToString(),
                         millis.ToString(),
