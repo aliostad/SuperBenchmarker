@@ -15,6 +15,56 @@ namespace SuperBenchmarker
 {
     class Program
     {
+
+        private struct LogData
+        {
+            public DateTimeOffset EventDate;
+            public int Index;
+            public int StatusCode;
+            public long Millis;
+            public IDictionary<string, object> Parameters;
+        }
+
+        private static ConcurrentQueue<LogData> _logDataQueue = new ConcurrentQueue<LogData>();
+
+        private static async Task<bool> ProcessLogQueueAsync(StreamWriter writer, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    await writer.FlushAsync();
+                    writer.Close();
+                    return true;
+                }
+
+                LogData data;
+                if (_logDataQueue.TryDequeue(out data))
+                {
+                    var s = string.Join("\t", new[]
+                   {
+                        data.EventDate.ToString(),
+                        data.Index.ToString(),
+                        data.StatusCode.ToString(),
+                        data.Millis.ToString(),
+                    }.Concat(data.Parameters.Select(x => x.Key + "=" + x.Value)));
+
+                    try
+                    {
+                        await writer.WriteLineAsync(s);
+                    }
+                    catch (Exception e)
+                    {
+                        Trace.WriteLine(e.ToString());
+                    }
+                }
+                else
+                {
+                    await Task.Delay(250, cancellationToken);
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
 
@@ -32,15 +82,15 @@ namespace SuperBenchmarker
 
             var success = Parser.Default.ParseArguments(args, commandLineOptions);
 
-            var then = DateTime.Now;
-            ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then) ;
-
             if (!success || isHelp)
             {
                 if (!isHelp && args.Length > 0)
                     ConsoleWriteLine(ConsoleColor.Red, "error parsing command line");
                 return;
             }
+
+            var then = DateTime.Now;
+            ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
 
             try
             {
@@ -66,6 +116,7 @@ namespace SuperBenchmarker
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 var source = new CancellationTokenSource(TimeSpan.FromDays(7));
 
+                Task.Run(() => ProcessLogQueueAsync(writer, source.Token), source.Token);
                 Task.Run(() =>
                 {
                     stop = Console.ReadKey(true);
@@ -101,22 +152,34 @@ namespace SuperBenchmarker
                                      var n = Interlocked.Increment(ref total);
 
                                      // fire and forget not to affect time taken or TPS
-                                     Task.Run(() =>
-                                        WriteLine(writer, n, (int)statusCode, sw.ElapsedMilliseconds, parameters));
+                                     _logDataQueue.Enqueue(new LogData()
+                                     {
+                                         Millis = sw.ElapsedMilliseconds,
+                                         Index = n,
+                                         EventDate = DateTimeOffset.Now,
+                                         StatusCode = (int)statusCode,
+                                         Parameters = parameters
+                                     });
+                                       
                                      if (!commandLineOptions.Verbose)
                                          Console.Write("\r" + total);
                                  }
                     );
                
-                stopwatch.Stop();
-                double[] orderedList = (from x in timeTakens
-                                        orderby x
-                                        select x).ToArray<double>();
                 Console.WriteLine();
+                stopwatch.Stop();
 
                 ConsoleWriteLine(ConsoleColor.Magenta, "---------------Finished!----------------");
                 var now = DateTime.Now;
                 ConsoleWriteLine(ConsoleColor.DarkCyan, "Finished at {0} (took {1})", now, now - then);
+
+                // waiting for log to catch up
+                Thread.Sleep(1000);
+
+                source.Cancel();
+                double[] orderedList = (from x in timeTakens
+                                        orderby x
+                                        select x).ToArray<double>();
 
                 // ----- adding stats of statuses returned
                 var stats = statusCodes.GroupBy(x => x)
@@ -175,35 +238,6 @@ namespace SuperBenchmarker
             }
             catch
             {
-
-            }
-        }
-
-        private static void WriteLine(StreamWriter writer,
-            int n,
-            int statusCode,
-            long millis,
-            IDictionary<string, object> parameters)
-        {
-            lock (writer)
-            {
-                try
-                {
-                    var s = string.Join("\t", new[]
-                    {
-                        DateTimeOffset.UtcNow.ToString(),
-                        n.ToString(),
-                        statusCode.ToString(),
-                        millis.ToString(),
-                    }.Concat(parameters.Select(x => x.Key + "=" + x.Value)));
-
-                    writer.WriteLine(s);
-                }
-                catch (Exception e)
-                {
-                    // not to throw UNOBSERVED EXCEPTION
-                    Trace.TraceWarning(e.ToString());
-                }
 
             }
         }

@@ -49,8 +49,8 @@ namespace SuperBenchmarker
             if (!string.IsNullOrEmpty(_options.Plugin)) // plugin
             {
                 var assembly = Assembly.LoadFile(_options.Plugin);
-                var valueProviderType = assembly.GetExportedTypes().Where(t => typeof (IValueProvider)
-                                                                      .IsAssignableFrom(t)).FirstOrDefault();
+                var valueProviderType = assembly.GetExportedTypes().FirstOrDefault(t => typeof(IValueProvider)
+                                                                      .IsAssignableFrom(t));
                 if(valueProviderType==null)
                     throw new ArgumentException("No public type in plugin implements IValueProvider.");
 
