@@ -95,7 +95,7 @@ namespace SuperBenchmarker
             try
             {
                 var requester = new Requester(commandLineOptions);
-                var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = true };
+                var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = false };
                 var stopwatch = Stopwatch.StartNew();
                 var timeTakens = new ConcurrentBag<double>();
                 if (commandLineOptions.SaveResponses)
