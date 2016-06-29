@@ -24,7 +24,8 @@ namespace SuperBenchmarker
             var requestHandler = new WebRequestHandler()
                                      {
                                          UseCookies = false,
-                                         UseDefaultCredentials = true
+                                         UseDefaultCredentials = true,
+                                         ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true
                                      };
             if (options.UseProxy)
             {
