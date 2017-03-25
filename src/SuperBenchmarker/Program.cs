@@ -70,6 +70,9 @@ namespace SuperBenchmarker
 
             // to cover our back for all those fire and forgets
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            ServicePointManager.DefaultConnectionLimit = 10000;
+            ServicePointManager.Expect100Continue = false;
+            ServicePointManager.UseNagleAlgorithm = false;
 
             Console.ForegroundColor = ConsoleColor.Gray;
 
@@ -111,61 +114,24 @@ namespace SuperBenchmarker
 
                 ConsoleWriteLine(ConsoleColor.Yellow, "[Press C to stop the test]");
                 int total = 0;
-                bool disrupted = false;
                 var stop = new ConsoleKeyInfo();
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 var source = new CancellationTokenSource(TimeSpan.FromDays(7));
 
                 Task.Run(() => ProcessLogQueueAsync(writer, source.Token), source.Token);
+
                 Task.Run(() =>
                 {
                     stop = Console.ReadKey(true);
-                    disrupted = true;
-                }, source.Token);
+                    ConsoleWriteLine(ConsoleColor.Red, "...");
+                    ConsoleWriteLine(ConsoleColor.Green, "Exiting.... please wait! (it might throw a few more requests)");
+                    ConsoleWriteLine(ConsoleColor.Red, "");
+                    source.Cancel();
+                }, source.Token); // NOT MEANT TO BE AWAITED!!!!
 
-                var result = Parallel.For(0, commandLineOptions.IsDryRun ? 1 : commandLineOptions.NumberOfRequests,
-                             new ParallelOptions()
-                             {
-                                 MaxDegreeOfParallelism = commandLineOptions.Concurrency
-                             },
-                                 (i, loopstate) =>
-                                 {
-                                     if (disrupted)
-                                     {
-                                         ConsoleWriteLine(ConsoleColor.Red, "...");
-                                         ConsoleWriteLine(ConsoleColor.Green, "Exiting.... please wait! (it might throw a few more requests)");
-                                         ConsoleWriteLine(ConsoleColor.Red, "");
-                                         loopstate.Stop();
-                                         source.Cancel();
-                                     }
+                Run(commandLineOptions, source, requester, statusCodes, timeTakens, total);
+                total = timeTakens.Count;
 
-                                     var sw = Stopwatch.StartNew();
-                                     IDictionary<string, object> parameters;
-                                     var statusCode = requester.Next(i, out parameters);
-                                     sw.Stop();
-                                     if (commandLineOptions.DelayInMillisecond > 0)
-                                     {
-                                         Thread.Sleep(commandLineOptions.DelayInMillisecond);
-                                     }
-                                     statusCodes.Add(statusCode);
-                                     timeTakens.Add(sw.ElapsedTicks);
-                                     var n = Interlocked.Increment(ref total);
-
-                                     // fire and forget not to affect time taken or TPS
-                                     _logDataQueue.Enqueue(new LogData()
-                                     {
-                                         Millis = sw.ElapsedMilliseconds,
-                                         Index = n,
-                                         EventDate = DateTimeOffset.Now,
-                                         StatusCode = (int)statusCode,
-                                         Parameters = parameters
-                                     });
-                                       
-                                     if (!commandLineOptions.Verbose)
-                                         Console.Write("\r" + total);
-                                 }
-                    );
-               
                 Console.WriteLine();
                 stopwatch.Stop();
 
@@ -230,6 +196,44 @@ namespace SuperBenchmarker
             Console.ResetColor();
         }
 
+        private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
+            Requester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
+        {
+            var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests), 
+                commandLineOptions.Concurrency);
+            customThreadPool.WorkItemFinished += (sender, args) =>
+            {
+                if (args.Result.NoWork)
+                    return;
+
+                statusCodes.Add((HttpStatusCode) args.Result.Status);
+                timeTakens.Add(args.Result.Ticks);
+                var n = Interlocked.Increment(ref total);
+
+                _logDataQueue.Enqueue(new LogData()
+                {
+                    Millis = (int) args.Result.Ticks / 10*1000*1000,
+                    Index = args.Result.Index,
+                    EventDate = DateTimeOffset.Now,
+                    StatusCode = args.Result.Status,
+                    Parameters = args.Result.Parameters
+                });
+
+                if(!commandLineOptions.Verbose)
+                    Console.Write("\r" + total);
+            };
+
+            customThreadPool.Start(commandLineOptions.NumberOfRequests, source);
+
+            while (!source.IsCancellationRequested)
+            {
+                Thread.Sleep(200);
+            }
+
+        }
+
+      
+
         private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             try
@@ -256,6 +260,46 @@ namespace SuperBenchmarker
             Console.ForegroundColor = color;
             Console.WriteLine(value, args);
             Console.ForegroundColor = foregroundColor;
+        }
+
+        class WorkItemFactory : IWorkItemFactory
+        {
+            private int _delayInMilli;
+            private Requester _requester;
+            private ConcurrentQueue<int> _indices;
+
+            public WorkItemFactory(Requester requester, int count, int delayInMilli = 0)
+            {
+                _requester = requester;
+                _delayInMilli = delayInMilli;
+                _indices = new ConcurrentQueue<int>(Enumerable.Range(0, count));
+            }
+
+            public async Task<WorkResult> GetWorkItem()
+            {
+               
+                int i = 0;
+                var tryDequeue = _indices.TryDequeue(out i);
+                if (!tryDequeue)
+                    return new WorkResult()
+                    {
+                        NoWork = true
+                    };
+
+                var stopwatch = Stopwatch.StartNew();
+                var result = await _requester.NextAsync(i);
+                stopwatch.Stop();
+                // fire and forget not to affect time taken or TPS
+
+                return new WorkResult()
+                {
+                    Status = (int) result.Item2,
+                    Index = i,
+                    Parameters = result.Item1,
+                    Ticks = stopwatch.ElapsedTicks
+                };
+
+            }
         }
     }
 }

@@ -63,6 +63,9 @@
   <ItemGroup>
     <Compile Include="CommandLineOptions.cs" />
     <Compile Include="CommandOption.cs" />
+    <Compile Include="ConcurrencyOptions.cs" />
+    <Compile Include="CustomThreadPool.cs" />
+    <Compile Include="IWorkItemFactory.cs" />
     <Compile Include="SeparatedFileValueProvider.cs" />
     <Compile Include="ExampleAttribute.cs" />
     <Compile Include="IListExtensions.cs" />
@@ -75,6 +78,7 @@
     <Compile Include="TemplateParser.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenisedString.cs" />
+    <Compile Include="WorkResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
