@@ -26,7 +26,7 @@ cinst SuperBenchmarker
 You may download the latest binary from download [folder](https://github.com/aliostad/SuperBenchmarker/tree/master/download) in GitHub source.
 
 
-###Usage
+### Usage
 
 sb.exe -u url [-c concurrency] [-n numberOfRequests] [-m method] [-t template] [-p plugin] [-f file] [-d]  [-v]  [-k]  [-x]  [-q]  [-h]  [-?]<br/>
 Parameters:<br/>
@@ -47,7 +47,7 @@ Parameters:<br/>
 - -?     Optional. Displays this help. (boolean switch)<br/>
 <br/>
 
-###Examples
+### Examples
 
 - -u http://google.com
 - -u http://google.com -n 1000 -c 10
