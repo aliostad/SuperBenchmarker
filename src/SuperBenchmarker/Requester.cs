@@ -93,6 +93,13 @@ namespace SuperBenchmarker
                 Console.ResetColor();                
             }
 
+            if (_options.IsDryRun && _options.OnlyRequest && request.Content != null)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine(await request.Content.ReadAsStringAsync());
+                Console.ResetColor();
+            }
+
             try
             {
                 var response = await _client.SendAsync(request);
@@ -136,7 +143,7 @@ namespace SuperBenchmarker
                     Console.ResetColor();
                 }
 
-                
+
             }
             catch (Exception e)
             {

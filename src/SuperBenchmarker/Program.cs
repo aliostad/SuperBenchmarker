@@ -92,6 +92,9 @@ namespace SuperBenchmarker
                 return;
             }
 
+            if (commandLineOptions.IsDryRun)
+                commandLineOptions.NumberOfRequests = 1;
+
             var then = DateTime.Now;
             ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
 
@@ -122,11 +125,18 @@ namespace SuperBenchmarker
 
                 Task.Run(() =>
                 {
-                    stop = Console.ReadKey(true);
+                    while (true)
+                    {
+                        stop = Console.ReadKey(true);
+                        if(stop.KeyChar == 'c')
+                            break;
+                    } 
+                    
                     ConsoleWriteLine(ConsoleColor.Red, "...");
                     ConsoleWriteLine(ConsoleColor.Green, "Exiting.... please wait! (it might throw a few more requests)");
                     ConsoleWriteLine(ConsoleColor.Red, "");
                     source.Cancel();
+
                 }, source.Token); // NOT MEANT TO BE AWAITED!!!!
 
                 Run(commandLineOptions, source, requester, statusCodes, timeTakens, total);
