@@ -199,10 +199,6 @@ namespace SuperBenchmarker
                         request.Content =
                             new ByteArrayContent(Encoding.UTF8.GetBytes(_templateParser.TextBody.ToString(dictionary)));
 
-                    foreach (var h in _templateParser.Headers)
-                    {
-                        request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
-                    }
                 }
             }
 
