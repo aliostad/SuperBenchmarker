@@ -89,7 +89,10 @@ namespace SuperBenchmarker
             if (_options.OutputHeaders)
             {
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.WriteLine(request.Headers.ToString());
+                Console.Write(request.Headers.ToString());
+                if (request.Content != null)
+                    Console.Write(request.Content.Headers.ToString());
+                Console.WriteLine();
                 Console.ResetColor();                
             }
 
@@ -199,6 +202,11 @@ namespace SuperBenchmarker
                         request.Content =
                             new ByteArrayContent(Encoding.UTF8.GetBytes(_templateParser.TextBody.ToString(dictionary)));
 
+                    foreach (var h in _templateParser.Headers)
+                    {
+                        if(!request.Headers.Any(x => x.Key == h.Key))
+                            request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
+                    }
                 }
             }
 
