@@ -33,7 +33,13 @@ namespace SuperBenchmarker
 
             var diff = time.Add(_diff).Subtract(DateTime.Now);
             if (diff.TotalMilliseconds > 30) // thread.sleep precision is roughly 15-30 milli
+            {
+                if(_options.Concurrency == 1) // in multi-thread does not work well
+                    Console.Write("\rWaiting for {0}ms", diff.TotalMilliseconds);
                 Thread.Sleep(diff);
+                if (_options.Concurrency == 1)
+                    Console.Write("\r                              ");
+            }
 
             return req;
         }
