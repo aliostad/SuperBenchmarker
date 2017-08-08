@@ -61,10 +61,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncRequesterBase.cs" />
     <Compile Include="CommandLineOptions.cs" />
     <Compile Include="CommandOption.cs" />
     <Compile Include="ConcurrencyOptions.cs" />
     <Compile Include="CustomThreadPool.cs" />
+    <Compile Include="IAsyncRequester.cs" />
+    <Compile Include="IRequester.cs" />
     <Compile Include="IWorkItemFactory.cs" />
     <Compile Include="SeparatedFileValueProvider.cs" />
     <Compile Include="ExampleAttribute.cs" />
@@ -76,6 +79,7 @@
     <Compile Include="RandomValueProvider.cs" />
     <Compile Include="Requester.cs" />
     <Compile Include="TemplateParser.cs" />
+    <Compile Include="TimeBasedRequester.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokenisedString.cs" />
     <Compile Include="WorkResult.cs" />

@@ -275,7 +275,7 @@ namespace SuperBenchmarker
         class WorkItemFactory : IWorkItemFactory
         {
             private int _delayInMilli;
-            private Requester _requester;
+            private IAsyncRequester _requester;
             private ConcurrentQueue<int> _indices;
 
             public WorkItemFactory(Requester requester, int count, int delayInMilli = 0)
