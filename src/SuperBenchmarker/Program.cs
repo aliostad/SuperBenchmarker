@@ -100,7 +100,10 @@ namespace SuperBenchmarker
 
             try
             {
-                var requester = new Requester(commandLineOptions);
+                var requester = string.IsNullOrEmpty(commandLineOptions.TimeField) 
+                    ? (IAsyncRequester) new Requester(commandLineOptions)
+                    : (IAsyncRequester) new TimeBasedRequester(commandLineOptions);
+
                 var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = false };
                 var stopwatch = Stopwatch.StartNew();
                 var timeTakens = new ConcurrentBag<double>();
@@ -207,7 +210,7 @@ namespace SuperBenchmarker
         }
 
         private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
-            Requester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
+            IAsyncRequester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
         {
             var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests), 
                 commandLineOptions.Concurrency);
@@ -278,7 +281,7 @@ namespace SuperBenchmarker
             private IAsyncRequester _requester;
             private ConcurrentQueue<int> _indices;
 
-            public WorkItemFactory(Requester requester, int count, int delayInMilli = 0)
+            public WorkItemFactory(IAsyncRequester requester, int count, int delayInMilli = 0)
             {
                 _requester = requester;
                 _delayInMilli = delayInMilli;
