@@ -7,6 +7,7 @@ using CommandLine;
 
 namespace SuperBenchmarker
 {
+    // letters left: e, g, o, ,
     public class CommandLineOptions : CommandOption
     {
         [Option('c', "concurrency" ,Required = false, HelpText = "Number of concurrent requests", DefaultValue = 1)]
@@ -41,6 +42,9 @@ namespace SuperBenchmarker
 
         [Option('d', "dryRun", Required = false, HelpText = "Runs a single dry run request to make sure all is good")]
         public bool IsDryRun { get; set; }
+
+        [Option('e', "timedField", Required = false, HelpText = "Designates a datetime field in data. If set, requests will be sent according to order and timing of records.")]
+        public string TimeField { get; set; }
 
         [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
         public bool Verbose { get; set; }
