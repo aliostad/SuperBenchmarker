@@ -95,6 +95,28 @@ namespace SuperBenchmarker
             if (commandLineOptions.IsDryRun)
                 commandLineOptions.NumberOfRequests = 1;
 
+            if(commandLineOptions.TlsVersion.HasValue)
+            {
+                switch(commandLineOptions.TlsVersion.Value)
+                {
+                    case 0:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
+                        break;
+                    case 1:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11;
+                        break;
+                    case 2:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                        break;
+                    case 3:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+                        break;
+                    default:
+                        throw new InvalidOperationException("TLS version not supported.");
+                }
+
+            }
+
             var then = DateTime.Now;
             ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
 

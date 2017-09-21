@@ -46,6 +46,9 @@ namespace SuperBenchmarker
         [Option('e', "timedField", Required = false, HelpText = "Designates a datetime field in data. If set, requests will be sent according to order and timing of records.")]
         public string TimeField { get; set; }
 
+        [Option('g', "timedField", Required = false, HelpText = "Version of TLS used. Accepted values are 0, 1, 2 and 3 for TLS 1.0, TLS 1.1 and TLS 1.2 and SSL3, respectively")]
+        public int? TlsVersion { get; set; }
+
         [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
         public bool Verbose { get; set; }
 
@@ -100,6 +103,7 @@ namespace SuperBenchmarker
 -u http://google.com -v (shows some verbose information including URL to target - especially useful if parameterised) 
 -u http://google.com -z (stores responses under response folder in the working directory. Creates folder if does not exist)
 -u http://google.com -z -w c:\temp\perfrun1 (stores responses in c:\temp\perfrun1. Creates folder if does not exist)
+-u http://google.com -g 2 (Uses TLS 1.2)
 
 ";
         }
