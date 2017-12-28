@@ -324,7 +324,8 @@ namespace SuperBenchmarker
                 var stopwatch = Stopwatch.StartNew();
                 var result = await _requester.NextAsync(i);
                 stopwatch.Stop();
-                // fire and forget not to affect time taken or TPS
+
+               await Task.Delay(_delayInMilli);
 
                 return new WorkResult()
                 {
