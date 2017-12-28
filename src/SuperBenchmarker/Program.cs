@@ -234,7 +234,7 @@ namespace SuperBenchmarker
         private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
             IAsyncRequester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
         {
-            var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests), 
+            var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests, commandLineOptions.DelayInMillisecond), 
                 commandLineOptions.Concurrency);
             customThreadPool.WorkItemFinished += (sender, args) =>
             {
