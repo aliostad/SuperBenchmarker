@@ -77,7 +77,7 @@ namespace SuperBenchmarker
         public bool IsHelp { get; set; }
 
         [Option('C', "dontcap", Required = false, HelpText = "Don't Cap to 50 characters when Logging parameters")]
-        public bool CapLoggingParameters { get; set; }
+        public bool DontCapLoggingParameters { get; set; }
 
         [Option('R', "responseregex", Required =false, HelpText ="Regex to extract from response. If it has groups, it retrieves the last group.")]
         public string ResponseExtractionRegex { get; set; }

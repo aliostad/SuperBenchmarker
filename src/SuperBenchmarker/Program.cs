@@ -28,7 +28,7 @@ namespace SuperBenchmarker
 
         private static ConcurrentQueue<LogData> _logDataQueue = new ConcurrentQueue<LogData>();
 
-        private static async Task<bool> ProcessLogQueueAsync(StreamWriter writer, bool capLogging, CancellationToken cancellationToken)
+        private static async Task<bool> ProcessLogQueueAsync(StreamWriter writer, bool donCapLogging, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -54,7 +54,7 @@ namespace SuperBenchmarker
                     }.Concat(data.Parameters.Select(x => {
                         var vs = x.Value.ToString();
                         return x.Key + "=" +
-                            (capLogging ? vs.Substring(0, Math.Min(vs.Length, 5)) : vs);
+                            (donCapLogging ? vs : vs.Substring(0, Math.Min(vs.Length, 5)));
                         }
                     )));
 
@@ -154,7 +154,7 @@ namespace SuperBenchmarker
                 var source = new CancellationTokenSource(TimeSpan.FromDays(7));
                 var logSourece = new CancellationTokenSource(TimeSpan.FromDays(7));
 
-                Task.Run(() => ProcessLogQueueAsync(writer, commandLineOptions.CapLoggingParameters, logSourece.Token), logSourece.Token);
+                Task.Run(() => ProcessLogQueueAsync(writer, commandLineOptions.DontCapLoggingParameters, logSourece.Token), logSourece.Token);
 
                 Task.Run(() =>
                 {
