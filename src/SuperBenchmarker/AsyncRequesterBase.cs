@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SuperBenchmarker
 {
     public abstract class AsyncRequesterBase : IAsyncRequester
     {
+
         protected CommandLineOptions _options;
         protected TokenisedString _url;
         protected HttpClient _client;
@@ -68,8 +71,10 @@ namespace SuperBenchmarker
         {
             HttpStatusCode statusCode = HttpStatusCode.SeeOther;
             string textContent = string.Empty;
-            IDictionary<string, object> parameters;
-            var request = BuildRequest(i, out parameters);
+            var res = BuildRequest(i);
+            var request = res.Item1;
+            var parameters = res.Item2;
+
             if (_options.Verbose)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -138,6 +143,14 @@ namespace SuperBenchmarker
                     Console.ResetColor();
                 }
 
+                // regex extract
+                if(textContent != null && !string.IsNullOrEmpty(_options.ResponseExtractionRegex))
+                {
+                    var match = new Regex(_options.ResponseExtractionRegex).Match(textContent);
+                    if(match.Success)
+                        parameters[Program.ResponseRegexExtractParamName] = match.Groups[match.Groups.Count - 1].Value;
+                        //parameters.Add(Program.ResponseRegexExtractParamName, match.Groups[match.Groups.Count - 1].Value);
+                }
 
             }
             catch (Exception e)
@@ -172,16 +185,16 @@ namespace SuperBenchmarker
             }
         }
 
-        internal virtual HttpRequestMessage BuildRequest(int i, out IDictionary<string, object> parameters)
+        internal virtual Tuple<HttpRequestMessage, IDictionary<string, object>> BuildRequest(int i)
         {
-            var dictionary = GetParams(i);
-            parameters = dictionary;
-            var request = new HttpRequestMessage(new HttpMethod(_options.Method), _url.ToString(dictionary));
+            var parameters = GetParams(i);
+            var request = new HttpRequestMessage(new HttpMethod(_options.Method), 
+                _url.ToString(parameters));
             if (_templateParser != null)
             {
                 foreach (var h in _templateParser.Headers)
                 {
-                    request.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
+                    request.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(parameters));
                 }
 
                 if (new[] { "post", "put", "delete" }.Any(x => x == _options.Method.ToLower()) &&
@@ -192,12 +205,14 @@ namespace SuperBenchmarker
                         request.Content = new ByteArrayContent(_templateParser.Payload);
                     else
                         request.Content =
-                            new ByteArrayContent(Encoding.UTF8.GetBytes(_templateParser.TextBody.ToString(dictionary)));
+                            new ByteArrayContent(Encoding.UTF8.GetBytes(
+                                _templateParser.TextBody.ToString(parameters)));
 
                     foreach (var h in _templateParser.Headers)
                     {
                         if (!request.Headers.Any(x => x.Key == h.Key))
-                            request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value.ToString(dictionary));
+                            request.Content.Headers.TryAddWithoutValidation(h.Key, 
+                                h.Value.ToString(parameters));
                     }
                 }
             }
@@ -217,7 +232,7 @@ namespace SuperBenchmarker
                 Console.ResetColor();
             }
 
-            return request;
+            return new Tuple<HttpRequestMessage, IDictionary<string, object>>(request, parameters);
         }
 
         private IDictionary<string, object> GetParams(int i)

@@ -15,6 +15,7 @@ namespace SuperBenchmarker
 {
     class Program
     {
+        public const string ResponseRegexExtractParamName = "###Response_Regex###";
 
         private struct LogData
         {
@@ -27,7 +28,7 @@ namespace SuperBenchmarker
 
         private static ConcurrentQueue<LogData> _logDataQueue = new ConcurrentQueue<LogData>();
 
-        private static async Task<bool> ProcessLogQueueAsync(StreamWriter writer, CancellationToken cancellationToken)
+        private static async Task<bool> ProcessLogQueueAsync(StreamWriter writer, bool capLogging, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -41,13 +42,21 @@ namespace SuperBenchmarker
                 LogData data;
                 if (_logDataQueue.TryDequeue(out data))
                 {
+
+                    Console.WriteLine(data.Parameters.First().Value);
+
                     var s = string.Join("\t", new[]
                    {
                         data.EventDate.ToString(),
                         data.Index.ToString(),
                         data.StatusCode.ToString(),
                         data.Millis.ToString(),
-                    }.Concat(data.Parameters.Select(x => x.Key + "=" + x.Value)));
+                    }.Concat(data.Parameters.Select(x => {
+                        var vs = x.Value.ToString();
+                        return x.Key + "=" +
+                            (capLogging ? vs.Substring(0, Math.Min(vs.Length, 5)) : vs);
+                        }
+                    )));
 
                     try
                     {
@@ -78,19 +87,17 @@ namespace SuperBenchmarker
 
             ThreadPool.SetMinThreads(200, 100);
             ThreadPool.SetMaxThreads(1000, 200);
-            var statusCodes = new ConcurrentBag<HttpStatusCode>();
 
-            var commandLineOptions = new CommandLineOptions();
             bool isHelp = args.Any(x => x == "-?");
 
-            var success = Parser.Default.ParseArguments(args, commandLineOptions);
+            Parser.Default.ParseArguments<CommandLineOptions>(args)
+                .WithParsed(x => WithOptionDoItBoy(x))
+                .WithNotParsed(y => Console.WriteLine(y));
+        }
 
-            if (!success || isHelp)
-            {
-                if (!isHelp && args.Length > 0)
-                    ConsoleWriteLine(ConsoleColor.Red, "error parsing command line");
-                return;
-            }
+        private static void WithOptionDoItBoy(CommandLineOptions commandLineOptions)
+        {
+            var statusCodes = new ConcurrentBag<HttpStatusCode>();
 
             if (commandLineOptions.IsDryRun)
                 commandLineOptions.NumberOfRequests = 1;
@@ -100,9 +107,9 @@ namespace SuperBenchmarker
 
             try
             {
-                var requester = string.IsNullOrEmpty(commandLineOptions.TimeField) 
-                    ? (IAsyncRequester) new Requester(commandLineOptions)
-                    : (IAsyncRequester) new TimeBasedRequester(commandLineOptions);
+                var requester = string.IsNullOrEmpty(commandLineOptions.TimeField)
+                    ? (IAsyncRequester)new Requester(commandLineOptions)
+                    : (IAsyncRequester)new TimeBasedRequester(commandLineOptions);
 
                 var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = false };
                 var stopwatch = Stopwatch.StartNew();
@@ -123,18 +130,19 @@ namespace SuperBenchmarker
                 var stop = new ConsoleKeyInfo();
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 var source = new CancellationTokenSource(TimeSpan.FromDays(7));
+                var logSourece = new CancellationTokenSource(TimeSpan.FromDays(7));
 
-                Task.Run(() => ProcessLogQueueAsync(writer, source.Token), source.Token);
+                Task.Run(() => ProcessLogQueueAsync(writer, commandLineOptions.CapLoggingParameters, logSourece.Token), logSourece.Token);
 
                 Task.Run(() =>
                 {
                     while (true)
                     {
                         stop = Console.ReadKey(true);
-                        if(stop.KeyChar == 'c')
+                        if (stop.KeyChar == 'c')
                             break;
-                    } 
-                    
+                    }
+
                     ConsoleWriteLine(ConsoleColor.Red, "...");
                     ConsoleWriteLine(ConsoleColor.Green, "Exiting.... please wait! (it might throw a few more requests)");
                     ConsoleWriteLine(ConsoleColor.Red, "");
@@ -198,6 +206,11 @@ namespace SuperBenchmarker
                 Console.WriteLine("  99%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
                 Console.WriteLine("99.9%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99.9M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
 
+                Thread.Sleep(500);
+                logSourece.Cancel();
+                Thread.Sleep(500);
+
+                writer.Flush();
             }
             catch (Exception exception)
             {
@@ -208,6 +221,7 @@ namespace SuperBenchmarker
 
             Console.ResetColor();
         }
+
 
         private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
             IAsyncRequester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
@@ -222,15 +236,16 @@ namespace SuperBenchmarker
                 statusCodes.Add((HttpStatusCode) args.Result.Status);
                 timeTakens.Add(args.Result.Ticks);
                 var n = Interlocked.Increment(ref total);
-
-                _logDataQueue.Enqueue(new LogData()
+                var logData = new LogData()
                 {
-                    Millis = (int) args.Result.Ticks / 10*1000*1000,
+                    Millis = (int)args.Result.Ticks / TimeSpan.TicksPerMillisecond,
                     Index = args.Result.Index,
                     EventDate = DateTimeOffset.Now,
                     StatusCode = args.Result.Status,
                     Parameters = args.Result.Parameters
-                });
+                };
+
+                _logDataQueue.Enqueue(logData);
 
                 if(!commandLineOptions.Verbose)
                     Console.Write("\r" + total);
@@ -244,8 +259,6 @@ namespace SuperBenchmarker
             }
 
         }
-
-      
 
         private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
@@ -304,6 +317,8 @@ namespace SuperBenchmarker
                 stopwatch.Stop();
                 // fire and forget not to affect time taken or TPS
 
+                Console.WriteLine(result.Item1.First().Value);
+
                 return new WorkResult()
                 {
                     Status = (int) result.Item2,
@@ -311,7 +326,6 @@ namespace SuperBenchmarker
                     Parameters = result.Item1,
                     Ticks = stopwatch.ElapsedTicks
                 };
-
             }
         }
     }

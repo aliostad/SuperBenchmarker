@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>SuperBenchmarker</id>
-    <version>2.4.0-beta</version>
+    <version>3.0.0</version>
     <title>SuperBenchmarker</title>
     <authors>Ali Kheyrollahi</authors>
     <owners>Ali Kheyrollahi</owners>

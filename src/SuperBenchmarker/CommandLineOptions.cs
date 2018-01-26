@@ -10,19 +10,19 @@ namespace SuperBenchmarker
     // letters left: e, g, o, ,
     public class CommandLineOptions : CommandOption
     {
-        [Option('c', "concurrency" ,Required = false, HelpText = "Number of concurrent requests", DefaultValue = 1)]
+        [Option('c', "concurrency" ,Required = false, HelpText = "Number of concurrent requests", Default = 1)]
         public int Concurrency { get; set; }
 
-        [Option('n', "numberOfRequests", Required = false, HelpText = "Total number of requests", DefaultValue = 100)]
+        [Option('n', "numberOfRequests", Required = false, HelpText = "Total number of requests", Default = 100)]
         public int NumberOfRequests { get; set; }
 
-        [Option('y', "delayInMillisecond", Required = false, HelpText = "Delay in millisecond", DefaultValue = 0)]
+        [Option('y', "delayInMillisecond", Required = false, HelpText = "Delay in millisecond", Default = 0)]
         public int DelayInMillisecond { get; set; }
 
         [Option('u', "url", Required = true, HelpText = "Target URL to call. Can include placeholders.")]
         public string Url { get; set; }
 
-        [Option('m', "method", Required = false, HelpText = "HTTP Method to use", DefaultValue = "GET")]
+        [Option('m', "method", Required = false, HelpText = "HTTP Method to use", Default = "GET")]
         public string Method { get; set; }
 
         [Option('t', "template", Required = false, HelpText = "Path to request template to use")]
@@ -31,7 +31,7 @@ namespace SuperBenchmarker
         [Option('p', "plugin", Required = false, HelpText = "Name of the plugin (DLL) to replace placeholders. Should contain one class which implements IValueProvider. Must reside in the same folder.")]
         public string Plugin { get; set; }
 
-        [Option('l', "logfile", Required = false, HelpText = "Path to the log file storing run stats", DefaultValue = "run.log")]
+        [Option('l', "logfile", Required = false, HelpText = "Path to the log file storing run stats", Default = "run.log")]
         public string LogFile { get; set; }
 
         [Option('f', "file", Required = false, HelpText = "Path to CSV file providing replacement values for the test")]
@@ -73,7 +73,12 @@ namespace SuperBenchmarker
         [Option('?', "help", Required = false, HelpText = "Displays this help.")]
         public bool IsHelp { get; set; }
 
-        [HelpOption('?', "help")]
+        [Option('C', "dontcap", Required = false, HelpText = "Don't Cap to 50 characters when Logging parameters")]
+        public bool CapLoggingParameters { get; set; }
+
+        [Option('R', "responseregex", Required =false, HelpText ="Regex to extract from response. If it has groups, it retrieves the last group.")]
+        public string ResponseExtractionRegex { get; set; }
+
         public string GetTheHelp()
         {
             return GetHelp();

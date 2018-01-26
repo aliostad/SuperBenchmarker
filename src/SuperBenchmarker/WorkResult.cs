@@ -17,5 +17,7 @@ namespace SuperBenchmarker
         public double Ticks { get; set; }
 
         public bool NoWork { get; set; }
+
+        public string ResponseExtract { get; set; }
     }
 }

@@ -35,3 +35,4 @@ packages/
 artifacts/
 script.sql
 *.nupkg
+.vs/

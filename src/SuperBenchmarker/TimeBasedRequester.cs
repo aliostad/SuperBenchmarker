@@ -17,10 +17,12 @@ namespace SuperBenchmarker
         {
         }
 
-        internal override HttpRequestMessage BuildRequest(int i, out IDictionary<string, object> parameters)
+        internal override Tuple<HttpRequestMessage, IDictionary<string, object>> BuildRequest(int i)
         {
 
-            var req = base.BuildRequest(i, out parameters);
+            var res = base.BuildRequest(i);
+            var req = res.Item1;
+            var parameters = res.Item2;
 
             var timeField = _options.TimeField;
             var time = GetTime(timeField, parameters);
@@ -41,7 +43,7 @@ namespace SuperBenchmarker
                     Console.Write("\r                              ");
             }
 
-            return req;
+            return new Tuple<HttpRequestMessage, IDictionary<string, object>>(req, parameters);
         }
 
         private DateTime GetTime(string timeField, IDictionary<string, object> parameter)

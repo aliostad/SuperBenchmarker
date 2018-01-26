@@ -34,7 +34,7 @@ namespace SuperBenchmarker
                     parameters.Append(attribute.Required ? "Required. " : "Optional. ");
                     parameters.Append(attribute.HelpText);
                     parameters.AppendLine(property.PropertyType == typeof (bool) ? " (boolean switch)" :
-                        (!attribute.Required && attribute.DefaultValue!=null) ? " (default=" + attribute.DefaultValue + ")" : "");
+                        (!attribute.Required && attribute.Default!=null) ? " (default=" + attribute.Default + ")" : "");
                 }
 
             }

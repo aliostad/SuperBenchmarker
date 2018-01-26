@@ -106,7 +106,8 @@ namespace SuperBenchmarker
             var dictionary = new Dictionary<string, object>();
             foreach (var gen in _gens)
             {
-                dictionary[gen.Key] = gen.Value();
+                var v = gen.Value();
+                dictionary[gen.Key] = v;
             }
             return dictionary;
         }
