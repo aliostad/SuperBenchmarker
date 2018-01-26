@@ -102,6 +102,28 @@ namespace SuperBenchmarker
             if (commandLineOptions.IsDryRun)
                 commandLineOptions.NumberOfRequests = 1;
 
+            if(commandLineOptions.TlsVersion.HasValue)
+            {
+                switch(commandLineOptions.TlsVersion.Value)
+                {
+                    case 0:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
+                        break;
+                    case 1:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11;
+                        break;
+                    case 2:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                        break;
+                    case 3:
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+                        break;
+                    default:
+                        throw new InvalidOperationException("TLS version not supported.");
+                }
+
+            }
+
             var then = DateTime.Now;
             ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
 
@@ -226,7 +248,7 @@ namespace SuperBenchmarker
         private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
             IAsyncRequester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
         {
-            var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests), 
+            var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests, commandLineOptions.DelayInMillisecond), 
                 commandLineOptions.Concurrency);
             customThreadPool.WorkItemFinished += (sender, args) =>
             {
@@ -315,7 +337,8 @@ namespace SuperBenchmarker
                 var stopwatch = Stopwatch.StartNew();
                 var result = await _requester.NextAsync(i);
                 stopwatch.Stop();
-                // fire and forget not to affect time taken or TPS
+
+               await Task.Delay(_delayInMilli);
 
                 Console.WriteLine(result.Item1.First().Value);
 
