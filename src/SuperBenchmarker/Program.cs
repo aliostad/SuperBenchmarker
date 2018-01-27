@@ -52,7 +52,7 @@ namespace SuperBenchmarker
                     }.Concat(data.Parameters.Select(x => {
                         var vs = x.Value.ToString();
                         return x.Key + "=" +
-                            (donCapLogging ? vs : vs.Substring(0, Math.Min(vs.Length, 5)));
+                            (donCapLogging ? vs : vs.Substring(0, Math.Min(vs.Length, 50)));
                         }
                     )));
 
