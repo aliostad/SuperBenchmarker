@@ -43,8 +43,6 @@ namespace SuperBenchmarker
                 if (_logDataQueue.TryDequeue(out data))
                 {
 
-                    Console.WriteLine(data.Parameters.First().Value);
-
                     var s = string.Join("\t", new[]
                    {
                         data.EventDate.ToString(),
@@ -339,8 +337,6 @@ namespace SuperBenchmarker
                 stopwatch.Stop();
 
                await Task.Delay(_delayInMilli);
-
-                Console.WriteLine(result.Item1.First().Value);
 
                 return new WorkResult()
                 {
