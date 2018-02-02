@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -149,7 +150,19 @@ namespace SuperBenchmarker
                     var match = new Regex(_options.ResponseExtractionRegex).Match(textContent);
                     if(match.Success)
                         parameters[Program.ResponseRegexExtractParamName] = match.Groups[match.Groups.Count - 1].Value;
-                        //parameters.Add(Program.ResponseRegexExtractParamName, match.Groups[match.Groups.Count - 1].Value);
+                }
+                
+                if(textContent != null && !string.IsNullOrEmpty(_options.CaptureJsonElementCount))
+                {
+                    try
+                    {
+                        var count = JsonCounter.Count(textContent, _options.CaptureJsonElementCount);
+                        parameters[Program.JsonCount] = count.HasValue ? count.Value.ToString() : "could not find path"; 
+                    }
+                    catch (Exception e)
+                    {
+                        parameters[Program.JsonCount] = e.Message;
+                    }
                 }
 
             }

@@ -33,8 +33,8 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("3.1.0.0")]
-[assembly: AssemblyFileVersion("3.1.0.0")]
-[assembly: AssemblyInformationalVersion("3.1.0")]
+[assembly: AssemblyVersion("3.2.0.0")]
+[assembly: AssemblyFileVersion("3.2.0.0")]
+[assembly: AssemblyInformationalVersion("3.2.0")]
 
 [assembly: InternalsVisibleTo("SuperBenchmarker.Tests")]

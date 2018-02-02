@@ -7,7 +7,7 @@ using CommandLine;
 
 namespace SuperBenchmarker
 {
-    // letters left: e, g, o, ,
+    // letters left: o, j,
     public class CommandLineOptions : CommandOption
     {
         [Option('c', "concurrency" ,Required = false, HelpText = "Number of concurrent requests", Default = 1)]
@@ -81,6 +81,10 @@ namespace SuperBenchmarker
 
         [Option('R', "responseregex", Required =false, HelpText ="Regex to extract from response. If it has groups, it retrieves the last group.")]
         public string ResponseExtractionRegex { get; set; }
+
+        [Option('j', "jsonCount", Required = false, HelpText = "Captures number of elements under the path e.g. root/leaf1/leaf2 finds count of leaf2 children - stores in the log as another parameter")]
+        public string CaptureJsonElementCount { get; set; }
+
 
         public string GetTheHelp()
         {

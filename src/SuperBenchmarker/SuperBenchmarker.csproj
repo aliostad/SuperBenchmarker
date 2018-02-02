@@ -69,6 +69,7 @@
     <Compile Include="IAsyncRequester.cs" />
     <Compile Include="IRequester.cs" />
     <Compile Include="IWorkItemFactory.cs" />
+    <Compile Include="JsonCounter.cs" />
     <Compile Include="SeparatedFileValueProvider.cs" />
     <Compile Include="ExampleAttribute.cs" />
     <Compile Include="IListExtensions.cs" />

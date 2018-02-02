@@ -16,6 +16,7 @@ namespace SuperBenchmarker
     class Program
     {
         public const string ResponseRegexExtractParamName = "###Response_Regex###";
+        public const string JsonCount = "###Json_Count###";
 
         private struct LogData
         {
