@@ -7,7 +7,7 @@ using CommandLine;
 
 namespace SuperBenchmarker
 {
-    // letters left: o, j,
+    // letters left: o, j, s
     public class CommandLineOptions : CommandOption
     {
         [Option('c', "concurrency" ,Required = false, HelpText = "Number of concurrent requests", Default = 1)]
@@ -46,7 +46,7 @@ namespace SuperBenchmarker
         [Option('e', "timedField", Required = false, HelpText = "Designates a datetime field in data. If set, requests will be sent according to order and timing of records.")]
         public string TimeField { get; set; }
 
-        [Option('g', "timedField", Required = false, HelpText = "Version of TLS used. Accepted values are 0, 1, 2 and 3 for TLS 1.0, TLS 1.1 and TLS 1.2 and SSL3, respectively")]
+        [Option('g', "TlsVersion", Required = false, HelpText = "Version of TLS used. Accepted values are 0, 1, 2 and 3 for TLS 1.0, TLS 1.1 and TLS 1.2 and SSL3, respectively")]
         public int? TlsVersion { get; set; }
 
         [Option('v', "verbose", Required = false, HelpText = "Provides verbose tracing information")]
@@ -85,6 +85,8 @@ namespace SuperBenchmarker
         [Option('j', "jsonCount", Required = false, HelpText = "Captures number of elements under the path e.g. root/leaf1/leaf2 finds count of leaf2 children - stores in the log as another parameter")]
         public string CaptureJsonElementCount { get; set; }
 
+        [Option('W', "WarmUpPeriod", Required = false, Default = 0,  HelpText = "Number of seconds to gradually increase number of concurrent users. Warm-up calls do not affect stats.")]
+        public int WarmupSeconds { get; set; }
 
         public string GetTheHelp()
         {
