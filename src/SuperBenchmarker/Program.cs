@@ -210,22 +210,25 @@ namespace SuperBenchmarker
                 Console.WriteLine();
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("TPS: " + Math.Round(total * 1000f / stopwatch.ElapsedMilliseconds, 1));
-                Console.WriteLine(" (requests/second)");
-                Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
-                Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");
-                Console.WriteLine("Avg: " + (timeTakens.Average() * 1000 / Stopwatch.Frequency) + "ms");
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine();
-                Console.WriteLine("  50%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(50M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  60%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(60M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  70%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(70M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  80%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(80M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  90%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(90M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  95%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(95M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  98%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(98M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("  99%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                Console.WriteLine("99.9%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99.9M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                if (!timeTakens.IsEmpty)
+                {
+                    Console.Write("TPS: " + Math.Round(total * 1000f / stopwatch.ElapsedMilliseconds, 1));
+                    Console.WriteLine(" (requests/second)");
+                    Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
+                    Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");
+                    Console.WriteLine("Avg: " + (timeTakens.Average() * 1000 / Stopwatch.Frequency) + "ms");
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine();
+                    Console.WriteLine("  50%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(50M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  60%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(60M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  70%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(70M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  80%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(80M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  90%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(90M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  95%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(95M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  98%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(98M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  99%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("99.9%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99.9M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                }
 
                 Thread.Sleep(500);
                 logSourece.Cancel();
@@ -247,12 +250,29 @@ namespace SuperBenchmarker
         private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
             IAsyncRequester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
         {
-            var customThreadPool = new CustomThreadPool(new WorkItemFactory(requester, commandLineOptions.NumberOfRequests, commandLineOptions.DelayInMillisecond), 
-                commandLineOptions.Concurrency);
+            var warmUpTotal = 0;
+            var customThreadPool = new CustomThreadPool(new WorkItemFactory(
+                requester,
+                commandLineOptions.NumberOfRequests,
+                commandLineOptions.DelayInMillisecond,
+                commandLineOptions.WarmupSeconds), 
+                source, 
+                commandLineOptions.Concurrency, 
+                commandLineOptions.WarmupSeconds);
+
             customThreadPool.WorkItemFinished += (sender, args) =>
             {
                 if (args.Result.NoWork)
                     return;
+
+                if (args.Result.IsWarmUp)
+                {
+                    var t = Interlocked.Increment(ref warmUpTotal);
+                    if (!commandLineOptions.Verbose)
+                        ConsoleWrite(ConsoleColor.Green, "\rWarmup [Users {1}]: {0}", warmUpTotal, customThreadPool.WorkerCount);
+
+                    return;
+                }
 
                 statusCodes.Add((HttpStatusCode) args.Result.Status);
                 timeTakens.Add(args.Result.Ticks);
@@ -269,10 +289,10 @@ namespace SuperBenchmarker
                 _logDataQueue.Enqueue(logData);
 
                 if(!commandLineOptions.Verbose)
-                    Console.Write("\r" + total);
+                    ConsoleWrite(ConsoleColor.DarkYellow, "\r{0}                                ", total);
             };
 
-            customThreadPool.Start(commandLineOptions.NumberOfRequests, source);
+            customThreadPool.Start(commandLineOptions.NumberOfRequests);
 
             while (!source.IsCancellationRequested)
             {
@@ -312,19 +332,27 @@ namespace SuperBenchmarker
         class WorkItemFactory : IWorkItemFactory
         {
             private int _delayInMilli;
+            private readonly int _warmupSeconds;
             private IAsyncRequester _requester;
             private ConcurrentQueue<int> _indices;
+            private DateTimeOffset _start = DateTimeOffset.Now;
+            private DateTimeOffset? _warmUpEnd;
 
-            public WorkItemFactory(IAsyncRequester requester, int count, int delayInMilli = 0)
+            public WorkItemFactory(IAsyncRequester requester, int count, int delayInMilli = 0, int warmupSeconds = 0)
             {
                 _requester = requester;
                 _delayInMilli = delayInMilli;
+                _warmupSeconds = warmupSeconds;
                 _indices = new ConcurrentQueue<int>(Enumerable.Range(0, count));
+                _warmUpEnd = warmupSeconds == 0 ? (DateTimeOffset?) null : _start.AddSeconds(warmupSeconds);
             }
 
             public async Task<WorkResult> GetWorkItem()
             {
-               
+                bool isWarmup = _warmUpEnd.HasValue
+                    ? _warmUpEnd.Value > DateTimeOffset.Now
+                    : false;
+
                 int i = 0;
                 var tryDequeue = _indices.TryDequeue(out i);
                 if (!tryDequeue)
@@ -336,15 +364,17 @@ namespace SuperBenchmarker
                 var stopwatch = Stopwatch.StartNew();
                 var result = await _requester.NextAsync(i);
                 stopwatch.Stop();
-
-               await Task.Delay(_delayInMilli);
+                
+                if(_delayInMilli > 0)
+                    await Task.Delay(_delayInMilli);
 
                 return new WorkResult()
                 {
                     Status = (int) result.Item2,
                     Index = i,
                     Parameters = result.Item1,
-                    Ticks = stopwatch.ElapsedTicks
+                    Ticks = stopwatch.ElapsedTicks,
+                    IsWarmUp = isWarmup
                 };
             }
         }
