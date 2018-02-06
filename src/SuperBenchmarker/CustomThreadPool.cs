@@ -12,11 +12,13 @@ namespace SuperBenchmarker
     class CustomThreadPool
     {
         private int _size;
+        private readonly int _warmUpSeconds;
         private IWorkItemFactory _workItemFactory;
         private CancellationTokenSource _cancellationTokenSource;
         private List<Thread> _threadPool = new List<Thread>();
         private int _countOfOperations;
         private int _total;
+        private bool _isWarmup = false;
 
         public class WorkItemFinishedEventArgs : EventArgs
         {
@@ -28,18 +30,54 @@ namespace SuperBenchmarker
             public WorkResult Result { get; private set; }
         }
 
+        public int WorkerCount
+        {
+            get
+            {
+                return _threadPool.Count;
+            }
+        }
+
         public event EventHandler<WorkItemFinishedEventArgs> WorkItemFinished; 
 
-        public CustomThreadPool(IWorkItemFactory workItemFactory, int size = 100)
+        public CustomThreadPool(IWorkItemFactory workItemFactory,
+            CancellationTokenSource tokenSource,
+            int size = 100, int warmUpSeconds = 0)
         {
             _workItemFactory = workItemFactory;
             _size = size;
+            _cancellationTokenSource = tokenSource;
 
+            if (warmUpSeconds > 0)
+            {
+                _isWarmup = true;
+                // DONT' AWAIT !!!
+                Warmup(TimeSpan.FromSeconds(Math.Max(warmUpSeconds / size, 1)));
+            }
+            else
+            {
+                for (int i = 0; i < _size; i++)
+                    AddThread();
+            }
+        }
+
+        private async Task Warmup(TimeSpan interval)
+        {
+            _isWarmup = true;
             for (int i = 0; i < _size; i++)
             {
-                var thread = new Thread(() => LoopAsync(_cancellationTokenSource.Token).Wait());
-                _threadPool.Add(thread);
+                AddThread();
+                await Task.Delay(interval);
             }
+
+            _isWarmup = false;
+        }
+
+        private void AddThread()
+        {
+            var thread = new Thread(() => LoopAsync(_cancellationTokenSource.Token).Wait());
+            _threadPool.Add(thread);
+            thread.Start();
         }
 
         protected void OnWorkItemFinished(WorkItemFinishedEventArgs eventArgs)
@@ -49,12 +87,15 @@ namespace SuperBenchmarker
         }
 
 
-        public void Start(int countOfOperations, CancellationTokenSource tokenSource)
+        public void Start(int countOfOperations)
         {
             _countOfOperations = countOfOperations;
-            _cancellationTokenSource = tokenSource;
 
-            _threadPool.ForEach((a) => a.Start()); 
+            _threadPool.ForEach((a) =>
+            {
+                if (a.ThreadState != System.Threading.ThreadState.Running)
+                    a.Start();
+            }); 
         }
 
         private async Task LoopAsync(CancellationToken cancellationToken)
@@ -80,13 +121,17 @@ namespace SuperBenchmarker
                         Status = 999,
                         Index = -1,
                         Parameters = new Dictionary<string, object>(),
-                        Ticks = stopwatch.ElapsedTicks
+                        Ticks = stopwatch.ElapsedTicks,
+                        IsWarmUp = _isWarmup
                     }));
                 }
 
-                var total = Interlocked.Increment(ref _total);
-                if (total >= _countOfOperations)
-                    _cancellationTokenSource.Cancel();
+                if(!_isWarmup)
+                {
+                    var total = Interlocked.Increment(ref _total);
+                    if (_total >= _countOfOperations)
+                        _cancellationTokenSource.Cancel();
+                }
             }
         }
 

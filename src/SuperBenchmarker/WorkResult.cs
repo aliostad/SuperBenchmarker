@@ -19,5 +19,7 @@ namespace SuperBenchmarker
         public bool NoWork { get; set; }
 
         public string ResponseExtract { get; set; }
+
+        public bool IsWarmUp { get; set; }
     }
 }
