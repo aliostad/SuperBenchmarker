@@ -19,6 +19,9 @@ namespace SuperBenchmarker
         private int _countOfOperations;
         private int _total;
         private bool _isWarmup = false;
+        public event EventHandler<WorkItemFinishedEventArgs> WorkItemFinished;
+        public event EventHandler<EventArgs> WarmupFinished;
+
 
         public class WorkItemFinishedEventArgs : EventArgs
         {
@@ -38,7 +41,6 @@ namespace SuperBenchmarker
             }
         }
 
-        public event EventHandler<WorkItemFinishedEventArgs> WorkItemFinished; 
 
         public CustomThreadPool(IWorkItemFactory workItemFactory,
             CancellationTokenSource tokenSource,
@@ -71,6 +73,7 @@ namespace SuperBenchmarker
             }
 
             _isWarmup = false;
+            OnWarmupFinished(new EventArgs());
         }
 
         private void AddThread()
@@ -78,6 +81,14 @@ namespace SuperBenchmarker
             var thread = new Thread(() => LoopAsync(_cancellationTokenSource.Token).Wait());
             _threadPool.Add(thread);
             thread.Start();
+        }
+        
+
+        protected void OnWarmupFinished(EventArgs e)
+        {
+            if (WarmupFinished != null)
+                WarmupFinished(this, e);
+
         }
 
         protected void OnWorkItemFinished(WorkItemFinishedEventArgs eventArgs)

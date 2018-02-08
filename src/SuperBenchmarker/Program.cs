@@ -17,6 +17,7 @@ namespace SuperBenchmarker
     {
         public const string ResponseRegexExtractParamName = "###Response_Regex###";
         public const string JsonCount = "###Json_Count###";
+        private static Stopwatch _stopwatch = new Stopwatch();
 
         private struct LogData
         {
@@ -133,7 +134,7 @@ namespace SuperBenchmarker
                     : (IAsyncRequester)new TimeBasedRequester(commandLineOptions);
 
                 var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = false };
-                var stopwatch = Stopwatch.StartNew();
+                _stopwatch.Restart();
                 var timeTakens = new ConcurrentBag<double>();
                 if (commandLineOptions.SaveResponses)
                 {
@@ -175,7 +176,7 @@ namespace SuperBenchmarker
                 total = timeTakens.Count;
 
                 Console.WriteLine();
-                stopwatch.Stop();
+                _stopwatch.Stop();
 
                 ConsoleWriteLine(ConsoleColor.Magenta, "---------------Finished!----------------");
                 var now = DateTime.Now;
@@ -212,7 +213,7 @@ namespace SuperBenchmarker
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 if (!timeTakens.IsEmpty)
                 {
-                    Console.Write("TPS: " + Math.Round(total * 1000f / stopwatch.ElapsedMilliseconds, 1));
+                    Console.Write("TPS: " + Math.Round(total * 1000f / _stopwatch.ElapsedMilliseconds, 1));
                     Console.WriteLine(" (requests/second)");
                     Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
                     Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");
@@ -260,6 +261,7 @@ namespace SuperBenchmarker
                 commandLineOptions.Concurrency, 
                 commandLineOptions.WarmupSeconds);
 
+            customThreadPool.WarmupFinished += CustomThreadPool_WarmupFinished;
             customThreadPool.WorkItemFinished += (sender, args) =>
             {
                 if (args.Result.NoWork)
@@ -299,6 +301,11 @@ namespace SuperBenchmarker
                 Thread.Sleep(200);
             }
 
+        }
+
+        private static void CustomThreadPool_WarmupFinished(object sender, EventArgs e)
+        {
+            _stopwatch.Restart();
         }
 
         private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
