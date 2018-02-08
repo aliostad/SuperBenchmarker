@@ -52,7 +52,7 @@ namespace SuperBenchmarker
             }
             else
             {
-                return line.Split(new[] {_separator}, StringSplitOptions.RemoveEmptyEntries);
+                return line.Split(new[] {_separator});
             }
         }
 
