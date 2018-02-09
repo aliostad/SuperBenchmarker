@@ -291,7 +291,7 @@ namespace SuperBenchmarker
                 _logDataQueue.Enqueue(logData);
 
                 if(!commandLineOptions.Verbose)
-                    ConsoleWrite(ConsoleColor.DarkYellow, "\r{0}                                ", total);
+                    ConsoleWrite(ConsoleColor.DarkYellow, "\r{0}	(TPS: {1})			", total, Math.Round(total * 1000f / _stopwatch.ElapsedMilliseconds, 1));
             };
 
             customThreadPool.Start(commandLineOptions.NumberOfRequests);
