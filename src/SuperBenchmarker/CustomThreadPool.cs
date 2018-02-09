@@ -104,7 +104,7 @@ namespace SuperBenchmarker
 
             _threadPool.ForEach((a) =>
             {
-                if (a.ThreadState != System.Threading.ThreadState.Running)
+                if (a.ThreadState == System.Threading.ThreadState.Unstarted)
                     a.Start();
             }); 
         }
