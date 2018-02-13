@@ -88,6 +88,9 @@ namespace SuperBenchmarker
         [Option('W', "WarmUpPeriod", Required = false, Default = 0,  HelpText = "Number of seconds to gradually increase number of concurrent users. Warm-up calls do not affect stats.")]
         public int WarmupSeconds { get; set; }
 
+        [Option('P', "ReportSliceSeconds", Required = false, Default = 3, HelpText = "Number of seconds as interval for reporting slices. E.g. if chosen as 5, report charts have 5 second intervals.")]
+        public int ReportSliceSeconds { get; set; }
+
         public string GetTheHelp()
         {
             return GetHelp();

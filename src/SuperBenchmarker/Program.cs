@@ -10,6 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
+using Newtonsoft.Json;
+using SuperBenchmarker.Reporting;
 
 namespace SuperBenchmarker
 {
@@ -95,16 +97,11 @@ namespace SuperBenchmarker
                 .WithNotParsed(y => Console.WriteLine(y));
         }
 
-        private static void WithOptionDoItBoy(CommandLineOptions commandLineOptions)
+        private static void SetupSsl(CommandLineOptions commandLineOptions)
         {
-            var statusCodes = new ConcurrentBag<HttpStatusCode>();
-
-            if (commandLineOptions.IsDryRun)
-                commandLineOptions.NumberOfRequests = 1;
-
-            if(commandLineOptions.TlsVersion.HasValue)
+            if (commandLineOptions.TlsVersion.HasValue)
             {
-                switch(commandLineOptions.TlsVersion.Value)
+                switch (commandLineOptions.TlsVersion.Value)
                 {
                     case 0:
                         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls;
@@ -121,10 +118,20 @@ namespace SuperBenchmarker
                     default:
                         throw new InvalidOperationException("TLS version not supported.");
                 }
-
             }
+        }
+
+        private static void WithOptionDoItBoy(CommandLineOptions commandLineOptions)
+        {
+            if (commandLineOptions.IsDryRun)
+                commandLineOptions.NumberOfRequests = 1;
+
+            SetupSsl(commandLineOptions);
 
             var then = DateTime.Now;
+            var reportFolder = Path.Combine(Environment.CurrentDirectory, then.ToString("yyyy-MM-dd_HH-mm-ss"));
+            Directory.CreateDirectory(reportFolder);
+
             ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
 
             try
@@ -135,7 +142,6 @@ namespace SuperBenchmarker
 
                 var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = false };
                 _stopwatch.Restart();
-                var timeTakens = new ConcurrentBag<double>();
                 if (commandLineOptions.SaveResponses)
                 {
                     if (string.IsNullOrEmpty(commandLineOptions.ResponseFolder))
@@ -172,8 +178,7 @@ namespace SuperBenchmarker
 
                 }, source.Token); // NOT MEANT TO BE AWAITED!!!!
 
-                Run(commandLineOptions, source, requester, statusCodes, timeTakens, total);
-                total = timeTakens.Count;
+                var reporter = Run(commandLineOptions, source, requester, total, reportFolder);
 
                 Console.WriteLine();
                 _stopwatch.Stop();
@@ -186,49 +191,43 @@ namespace SuperBenchmarker
                 Thread.Sleep(1000);
 
                 source.Cancel();
-                double[] orderedList = (from x in timeTakens
-                                        orderby x
-                                        select x).ToArray<double>();
+                var report = reporter.Finish();
+                SaveReport(report, reportFolder);
 
-                // ----- adding stats of statuses returned
-                var stats = statusCodes.GroupBy(x => x)
-                           .Select(y => new { Status = y.Key, Count = y.Count() }).OrderByDescending(z => z.Count);
-
-                foreach (var stat in stats)
+                foreach (var stat in report.StatusCodeSummary)
                 {
-                    int statusCode = (int)stat.Status;
+                    int statusCode = stat.Key;
                     if (statusCode >= 400 && statusCode < 600)
                     {
-                        ConsoleWriteLine(ConsoleColor.Red, string.Format("Status {0}:    {1}", statusCode, stat.Count));
+                        ConsoleWriteLine(ConsoleColor.Red, string.Format("Status {0}:    {1}", statusCode, stat.Value));
                     }
                     else
                     {
-                        ConsoleWriteLine(ConsoleColor.Green, string.Format("Status {0}:    {1}", statusCode, stat.Count));
+                        ConsoleWriteLine(ConsoleColor.Green, string.Format("Status {0}:    {1}", statusCode, stat.Value));
                     }
-
                 }
 
                 Console.WriteLine();
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                if (!timeTakens.IsEmpty)
+                if (report.Percentiles.Any())
                 {
-                    Console.Write("TPS: " + Math.Round(total * 1000f / _stopwatch.ElapsedMilliseconds, 1));
+                    Console.Write("RPS: " + report.Rps);
                     Console.WriteLine(" (requests/second)");
-                    Console.WriteLine("Max: " + (timeTakens.Max() * 1000 / Stopwatch.Frequency) + "ms");
-                    Console.WriteLine("Min: " + (timeTakens.Min() * 1000 / Stopwatch.Frequency) + "ms");
-                    Console.WriteLine("Avg: " + (timeTakens.Average() * 1000 / Stopwatch.Frequency) + "ms");
+                    Console.WriteLine("Max: " + report.Max + "ms");
+                    Console.WriteLine("Min: " + report.Min + "ms");
+                    Console.WriteLine("Avg: " + report.Average + "ms");
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
                     Console.WriteLine();
-                    Console.WriteLine("  50%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(50M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  60%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(60M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  70%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(70M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  80%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(80M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  90%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(90M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  95%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(95M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  98%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(98M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("  99%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
-                    Console.WriteLine("99.9%\tbelow " + Math.Round((double)((orderedList.Percentile<double>(99.9M) * 1000.0) / ((double)Stopwatch.Frequency))) + "ms");
+                    Console.WriteLine("  50%\tbelow " + report.Percentiles[50] + "ms");
+                    Console.WriteLine("  60%\tbelow " + report.Percentiles[60] + "ms");
+                    Console.WriteLine("  70%\tbelow " + report.Percentiles[70] + "ms");
+                    Console.WriteLine("  80%\tbelow " + report.Percentiles[80] + "ms");
+                    Console.WriteLine("  90%\tbelow " + report.Percentiles[90] + "ms");
+                    Console.WriteLine("  95%\tbelow " + report.Percentiles[95] + "ms");
+                    Console.WriteLine("  98%\tbelow " + report.Percentiles[98] + "ms");
+                    Console.WriteLine("  99%\tbelow " + report.Percentiles[99] + "ms");
+                    Console.WriteLine("99.9%\tbelow " + report.Percentiles[99.9M] + "ms");
                 }
 
                 Thread.Sleep(500);
@@ -248,8 +247,8 @@ namespace SuperBenchmarker
         }
 
 
-        private static void Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
-            IAsyncRequester requester, ConcurrentBag<HttpStatusCode> statusCodes, ConcurrentBag<double> timeTakens, int total)
+        private static Reporter Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
+            IAsyncRequester requester, int total, string reportFolder)
         {
             var warmUpTotal = 0;
             var customThreadPool = new CustomThreadPool(new WorkItemFactory(
@@ -261,7 +260,16 @@ namespace SuperBenchmarker
                 commandLineOptions.Concurrency, 
                 commandLineOptions.WarmupSeconds);
 
-            customThreadPool.WarmupFinished += CustomThreadPool_WarmupFinished;
+            var reporter = new Reporter(Environment.CommandLine, commandLineOptions.ReportSliceSeconds, () => customThreadPool.WorkerCount);
+            if (commandLineOptions.WarmupSeconds == 0)
+                reporter.Start();
+
+            customThreadPool.WarmupFinished += (sender, args) =>
+            {
+                _stopwatch.Restart();
+                reporter.Start();
+            };
+
             customThreadPool.WorkItemFinished += (sender, args) =>
             {
                 if (args.Result.NoWork)
@@ -276,8 +284,9 @@ namespace SuperBenchmarker
                     return;
                 }
 
-                statusCodes.Add((HttpStatusCode) args.Result.Status);
-                timeTakens.Add(args.Result.Ticks);
+                reporter.AddResponse((HttpStatusCode)args.Result.Status, (long) args.Result.Ticks);
+                ConsiderUpdatingReport(reporter, reportFolder);
+
                 var n = Interlocked.Increment(ref total);
                 var logData = new LogData()
                 {
@@ -291,7 +300,7 @@ namespace SuperBenchmarker
                 _logDataQueue.Enqueue(logData);
 
                 if(!commandLineOptions.Verbose)
-                    ConsoleWrite(ConsoleColor.DarkYellow, "\r{0}	(TPS: {1})			", total, Math.Round(total * 1000f / _stopwatch.ElapsedMilliseconds, 1));
+                    ConsoleWrite(ConsoleColor.DarkYellow, "\r{0}	(RPS: {1})			", total, Math.Round(total * 1000f / _stopwatch.ElapsedMilliseconds, 1));
             };
 
             customThreadPool.Start(commandLineOptions.NumberOfRequests);
@@ -301,11 +310,30 @@ namespace SuperBenchmarker
                 Thread.Sleep(200);
             }
 
+            return reporter;
         }
 
-        private static void CustomThreadPool_WarmupFinished(object sender, EventArgs e)
+        private static void ConsiderUpdatingReport(Reporter reporter, string reportFolder)
         {
-            _stopwatch.Restart();
+            var report = reporter.InterimReport();
+            if(report != null)
+            {
+                SaveReport(report, reportFolder);
+            }
+        }
+
+        private static void SaveReport(Report report, string reportFolder)
+        {
+            try
+            {
+                File.WriteAllText(Path.Combine(reportFolder, 
+                    report.IsFinal ? "report.json" : "interim.json"), 
+                    JsonConvert.SerializeObject(report));
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e.ToString());
+            }
         }
 
         private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)

@@ -73,7 +73,7 @@ namespace SuperBenchmarker
             }
 
             _isWarmup = false;
-            OnWarmupFinished(new EventArgs());
+            OnWarmupFinished(EventArgs.Empty);
         }
 
         private void AddThread()
