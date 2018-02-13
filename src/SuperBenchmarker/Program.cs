@@ -328,7 +328,10 @@ namespace SuperBenchmarker
             {
                 File.WriteAllText(Path.Combine(reportFolder, 
                     report.IsFinal ? "report.json" : "interim.json"), 
-                    JsonConvert.SerializeObject(report));
+                    JsonConvert.SerializeObject(report, new JsonSerializerSettings()
+                    {
+                        DateFormatHandling = DateFormatHandling.IsoDateFormat
+                    }));
             }
             catch (Exception e)
             {
