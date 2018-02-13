@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using SuperBenchmarker.Reporting;
 
 namespace SuperBenchmarker
@@ -326,12 +328,19 @@ namespace SuperBenchmarker
         {
             try
             {
+                var jss = new JsonSerializerSettings()
+                {
+                    DateFormatHandling = DateFormatHandling.IsoDateFormat
+                };
+
+                jss.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                var dtc = new IsoDateTimeConverter();
+                dtc.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.FFFK";
+                jss.Converters.Add(dtc);
+
                 File.WriteAllText(Path.Combine(reportFolder, 
                     report.IsFinal ? "report.json" : "interim.json"), 
-                    JsonConvert.SerializeObject(report, new JsonSerializerSettings()
-                    {
-                        DateFormatHandling = DateFormatHandling.IsoDateFormat
-                    }));
+                    JsonConvert.SerializeObject(report, jss));
             }
             catch (Exception e)
             {

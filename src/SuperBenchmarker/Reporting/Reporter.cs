@@ -92,7 +92,7 @@ namespace SuperBenchmarker.Reporting
             if(millis.Any())
             {
                 r.Percentiles = BuildPercentiles();
-                r.StatusCodeSummary = BuildStatusSummary().ToList();
+                r.StatusCodeSummary = BuildStatusSummary(_statuses).ToList();
                 r.Average = Math.Round(millis.Average(), 1);
                 r.Max = (int)millis.Max();
                 r.Min = (int)millis.Min();
@@ -126,9 +126,9 @@ namespace SuperBenchmarker.Reporting
             };
         }
 
-        private IEnumerable<KeyValuePair< int, int>> BuildStatusSummary()
+        internal static IEnumerable<KeyValuePair< int, int>> BuildStatusSummary(IEnumerable<HttpStatusCode> statuses)
         {
-            return _statuses.GroupBy(x => x)
+            return statuses.GroupBy(x => x)
                       .Select(y =>  new KeyValuePair<int, int>( (int) y.Key, y.Count()))
                       .OrderByDescending(z => z.Key);
         }

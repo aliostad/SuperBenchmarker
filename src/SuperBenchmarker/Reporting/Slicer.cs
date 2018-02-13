@@ -32,7 +32,8 @@ namespace SuperBenchmarker.Reporting
                 Concurrency = concurrency,
                 CutTaken = DateTimeOffset.Now,
                 TotalRequests = statuses.Count,
-                Rps = Math.Round(stats.Length / seconds, 1)
+                Rps = Math.Round(stats.Length / seconds, 1),
+                StatusBreakdown = Reporter.BuildStatusSummary(stats).ToList()
             };
 
 
