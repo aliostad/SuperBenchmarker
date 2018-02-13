@@ -15,11 +15,10 @@ namespace SuperBenchmarker.Reporting
         private Slicer _slicer = new Slicer();
         private string _commandLine;
         private readonly Func<int> _concurrencyProvider;
-        private ConcurrentQueue<HttpStatusCode> _statuses = new ConcurrentQueue<HttpStatusCode>();
+        private ConcurrentQueue<ResponseLog> _responses = new ConcurrentQueue<ResponseLog>();
         private CancellationTokenSource _cts = new CancellationTokenSource();
         private ConcurrentQueue<Slice> _slices = new ConcurrentQueue<Slice>();
         private DateTimeOffset _start = DateTimeOffset.Now;
-        private ConcurrentQueue<long> _ticksTaken = new ConcurrentQueue<long>();
         private object _lock = new object();
         private int _lastSliceCount = 0;
 
@@ -36,16 +35,14 @@ namespace SuperBenchmarker.Reporting
         {
             _start = DateTimeOffset.Now;
             _slices = new ConcurrentQueue<Slice>();
-            _statuses = new ConcurrentQueue<HttpStatusCode>();
-            _ticksTaken = new ConcurrentQueue<long>();
+            _responses = new ConcurrentQueue<ResponseLog>();
             _slicer.Restart();
             RunSlices(_cts.Token); // DONT WAIT FOR IT
         }
 
         public void AddResponse(HttpStatusCode statusCode, long ticksTaken)
         {
-            _statuses.Enqueue(statusCode);
-            _ticksTaken.Enqueue(ticksTaken);
+            _responses.Enqueue(new ResponseLog() { StatusCode = statusCode, TicksTaken = ticksTaken });
         }
 
         private async Task RunSlices(CancellationToken token)
@@ -53,7 +50,7 @@ namespace SuperBenchmarker.Reporting
             while(!token.IsCancellationRequested)
             {
                 await Task.Delay(SliceSeconds * 1000, token);
-                _slices.Enqueue(_slicer.Slice(_concurrencyProvider(), _statuses.ToList()));
+                _slices.Enqueue(_slicer.Slice(_concurrencyProvider(), _responses.ToList()));
             }
         }
 
@@ -77,7 +74,7 @@ namespace SuperBenchmarker.Reporting
 
         private Report BuildReport()
         {
-            var millis = _ticksTaken.Select(x => (x * 1000 / Stopwatch.Frequency)).ToArray();
+            var millis = _responses.Select(x => (x.TicksTaken * 1000 / Stopwatch.Frequency)).ToArray();
             var r = new Report()
             {
                 CommandLine = _commandLine,
@@ -86,13 +83,13 @@ namespace SuperBenchmarker.Reporting
                 IsFinal = _cts.IsCancellationRequested,
                 ReportingSliceSeconds = SliceSeconds,
                 Slices = _slices.ToList(),
-                Total = _statuses.Count
+                Total = _responses.Count
             };
 
             if(millis.Any())
             {
                 r.Percentiles = BuildPercentiles();
-                r.StatusCodeSummary = BuildStatusSummary(_statuses).ToList();
+                r.StatusCodeSummary = BuildStatusSummary(_responses.Select(x => x.StatusCode)).ToList();
                 r.Average = Math.Round(millis.Average(), 1);
                 r.Max = (int)millis.Max();
                 r.Min = (int)millis.Min();
@@ -104,9 +101,9 @@ namespace SuperBenchmarker.Reporting
 
         private Dictionary<decimal, int> BuildPercentiles()
         {
-            int[] orderedList = (from x in _ticksTaken
+            int[] orderedList = (from x in _responses
                                   orderby x
-                                  select x).Select(y => (int) (y * 1000 / Stopwatch.Frequency)).ToArray();
+                                  select x.TicksTaken).Select(y => (int) (y * 1000 / Stopwatch.Frequency)).ToArray();
 
             return new Dictionary<decimal, int>
             {

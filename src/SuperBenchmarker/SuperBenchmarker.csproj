@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Reporting\Report.cs" />
     <Compile Include="Reporting\Reporter.cs" />
+    <Compile Include="Reporting\ResponseLog.cs" />
     <Compile Include="Reporting\Slice.cs" />
     <Compile Include="Reporting\Slicer.cs" />
     <Compile Include="Requesting\AsyncRequesterBase.cs" />

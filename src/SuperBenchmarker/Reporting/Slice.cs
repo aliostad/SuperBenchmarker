@@ -22,5 +22,10 @@ namespace SuperBenchmarker.Reporting
         public double Rps { get; set; }
 
         public int Concurrency { get; set; }
+
+        public double AverageResponseTime { get; set; }
+
+        public double MedianResponseTime { get; set; }
+
     }
 }

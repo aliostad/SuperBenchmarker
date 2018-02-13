@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -18,22 +19,27 @@ namespace SuperBenchmarker.Reporting
             _previousSliceTime = DateTimeOffset.Now;
         }
 
-        public Slice Slice(int concurrency, IList<HttpStatusCode> statuses, DateTimeOffset? cutTaken = null)
+        public Slice Slice(int concurrency, IList<ResponseLog> responses, DateTimeOffset? cutTaken = null)
         {
-            var stats = statuses.Skip(_previousSliceResponseCount).ToArray();
+            var stats = responses.Skip(_previousSliceResponseCount).ToArray();
             DateTimeOffset toTime = cutTaken ?? DateTimeOffset.Now;
             double seconds = toTime.Subtract(_previousSliceTime).TotalMilliseconds / 1000;
 
             _previousSliceTime = DateTimeOffset.Now;
-            _previousSliceResponseCount = statuses.Count;
+            _previousSliceResponseCount = responses.Count;
+            var sorted = stats.Select(x => x.TicksTaken * 1000 / Stopwatch.Frequency).OrderByDescending(y => y).ToArray();
+            var median = sorted.Length == 0 ? 0 : sorted[sorted.Length / 2];
 
             return new Slice()
             {
                 Concurrency = concurrency,
                 CutTaken = DateTimeOffset.Now,
-                TotalRequests = statuses.Count,
+                TotalRequests = responses.Count,
                 Rps = Math.Round(stats.Length / seconds, 1),
-                StatusBreakdown = Reporter.BuildStatusSummary(stats).ToList()
+                StatusBreakdown = Reporter.BuildStatusSummary(stats.Select(x => x.StatusCode)).ToList(),
+                AverageResponseTime = stats.Length == 0 ? 0 :
+                    Math.Round(stats.Average(x => x.TicksTaken * 1000 / Stopwatch.Frequency), 1),
+                MedianResponseTime = median
             };
 
 
