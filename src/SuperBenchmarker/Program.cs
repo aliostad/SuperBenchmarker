@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -248,7 +249,6 @@ namespace SuperBenchmarker
             Console.ResetColor();
         }
 
-
         private static Reporter Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
             IAsyncRequester requester, int total, string reportFolder)
         {
@@ -324,8 +324,24 @@ namespace SuperBenchmarker
             }
         }
 
+        private static void EmitIndexHtmlIfNeededAndBrowse(string reportFolder)
+        {
+            var fn = Path.Combine(reportFolder, "index.html");
+            if(!File.Exists(fn))
+            {
+                var ms = new MemoryStream();
+                Assembly.GetExecutingAssembly().GetManifestResourceStream("SuperBenchmarker.Reporting.index.html").CopyTo(ms);
+                File.WriteAllBytes(fn, ms.ToArray());
+                ms = new MemoryStream();
+                Assembly.GetExecutingAssembly().GetManifestResourceStream("SuperBenchmarker.Reporting.d3.js").CopyTo(ms);
+                File.WriteAllBytes(Path.Combine(reportFolder, "d3.js"), ms.ToArray());
+                Process.Start("file:///" + fn);
+            }
+        }
+
         private static void SaveReport(Report report, string reportFolder)
         {
+            EmitIndexHtmlIfNeededAndBrowse(reportFolder);
             try
             {
                 var jss = new JsonSerializerSettings()
@@ -339,8 +355,9 @@ namespace SuperBenchmarker
                 jss.Converters.Add(dtc);
 
                 File.WriteAllText(Path.Combine(reportFolder, 
-                    report.IsFinal ? "report.json" : "interim.json"), 
-                    JsonConvert.SerializeObject(report, jss));
+                    report.IsFinal ? "final.js" : "interim.js"), 
+                    string.Format("var {0}={1};", report.IsFinal ? "final" : "interim",
+                    JsonConvert.SerializeObject(report, jss)));
             }
             catch (Exception e)
             {

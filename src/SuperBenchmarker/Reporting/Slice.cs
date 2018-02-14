@@ -10,14 +10,14 @@ namespace SuperBenchmarker.Reporting
     {
         public Slice()
         {
-            StatusBreakdown = new List<KeyValuePair<int, int>>();
+            StatusBreakdown = new Dictionary<int, int>();
         }
 
         public int TotalRequests { get; set; }
 
         public DateTimeOffset CutTaken { get; set; }
 
-        public List<KeyValuePair<int, int>> StatusBreakdown { get; set; }
+        public Dictionary<int, int> StatusBreakdown { get; set; }
 
         public double Rps { get; set; }
 

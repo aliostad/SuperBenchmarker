@@ -1,0 +1,364 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+        line {
+            fill: none;
+            stroke: grey;
+            shape-rendering: auto;
+            stroke-width: 2px;
+        }
+
+        path {
+            fill: none;
+            stroke-width: 3px;
+        }
+
+        .line {
+            stroke-width: 2px;
+        }
+
+        li, span {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 12px;
+        }
+
+        p {
+            margin-left: 40px;
+            width: 960px;
+            text-align: center;
+        }
+
+        input {
+            margin-left: 20px;
+        }
+
+        .label {
+            margin-left: 40px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        div {
+            margin-top: 5px;
+        }
+
+        .contolForTheHeartOfTheSun {
+            background-color: #EEF;
+            padding: 5px;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        li {
+            list-style-type: square;
+            margin-left: 30px;
+        }
+    </style>
+    <meta charset="utf-8" />
+    <title>Superbenchmarker</title>
+    <script src="d3.js"></script>
+    <script src="interim.js" id="interim"></script>
+    <script src="final.js" id="final"></script>
+</head>
+<body>
+    <div id="shibo"></div>
+    <p class="contolForTheHeartOfTheSun">
+        <input type="checkbox" name="total" id="total" checked /> <span id="totals">Total Requests</span>
+        <input type="checkbox" name="rps" id="rps" checked /> <span id="rpss">RPS</span>
+        <input type="checkbox" name="concurrency" id="concurrency" /> <span id="concurrencys">Concurrency</span>
+        <input type="checkbox" name="med" id="med" checked /> <span id="meds">Response Time - Median</span>
+        <input type="checkbox" name="avg" id="avg" /> <span id="avgs">Response Time - Average</span>
+    </p>
+    <p>
+        <table border="0">
+            <tr>
+                <td width="400px">
+                    <div>
+                        <span class="label">Requests: </span><span class="metric" id="totalt"></span>
+                    </div>
+                    <div>
+                        <span class="label">RPS: </span><span class="metric" id="rpst"></span>
+                    </div>
+                    <div>
+                        <span class="label">90th Percentile: </span><span class="metric" id="p90"></span>
+                    </div>
+                    <div>
+                        <span class="label">95th Percentile: </span><span class="metric" id="p95"></span>
+                    </div>
+                    <div>
+                        <span class="label">99th Percentile: </span><span class="metric" id="p99"></span>
+                    </div>
+                    <div>
+                        <span class="label">Average: </span><span class="metric" id="avgt"></span>
+                    </div>
+                    <div></div>
+                    <span class="label">Min: </span><span class="metric" id="min"></span>
+                    </div>
+                    <div>
+                        <span class="label">Max: </span><span class="metric" id="max"></span>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <span class="label">Status: </span><span class="metric" id="status"></span>
+                    </div>
+                    <div>
+                        <span class="label">Start time: </span><span class="metric" id="start"></span>
+                    </div>
+                    <div>
+                        <span class="label">Finish time: </span><span class="metric" id="finish"></span>
+                    </div>
+                    <div>
+                        <span class="label">Command: </span><span class="metric" id="cmd"></span>
+                    </div>
+                    <div>
+                        <span class="label">Status breakdown: </span>
+                        <ul>
+                            <li id="s200"></li>
+                            <li id="s400"></li>
+                            <li id="s500"></li>
+                        </ul>
+                    </div>
+                    <div>
+
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </p>
+    <script>
+        // temp vars
+        var slice = null,
+            datapointsSoFar = 0,
+            lineNames = ["total", "rps", "concurrency", "med", "avg"];
+
+        var colours = d3.scaleOrdinal(d3.schemeCategory10);
+        // set the dimensions and margins of the graph
+        var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+            width = 1020 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+        // parse the date / time
+        var parseTime = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L%Z");
+
+        // set the ranges
+        var x = d3.scaleTime().range([0, width]);
+        var y = d3.scaleLinear().range([height, 0]);
+
+
+        function loadData(j) {
+
+            // update text
+            d3.select("#totalt").text(j.total);
+            d3.select("#rpst").text(j.rps);
+            d3.select("#p90").text(j.percentiles["90"] + "ms");
+            d3.select("#p95").text(j.percentiles["95"] + "ms");
+            d3.select("#p99").text(j.percentiles["99"] + "ms");
+            d3.select("#avgt").text(j.average + "ms");
+            d3.select("#max").text(j.max + "ms");
+            d3.select("#min").text(j.min + "ms");
+            d3.select("#cmd").text(j.commandLine);
+            d3.select("#start").text(j.start);
+            d3.select("#finish").text(j.isFinal ? j.end : "");
+            d3.select("#status").text(j.isFinal ? "finished" : "running...");
+            d3.select("#s200").text("200: " + (j.statusCodeSummary["200"] ? j.statusCodeSummary["200"] : 0));
+            d3.select("#s400").text("400: " + (j.statusCodeSummary["400"] ? j.statusCodeSummary["400"] : 0));
+            d3.select("#s500").text("500: " + (j.statusCodeSummary["500"] ? j.statusCodeSummary["500"] : 0));
+
+
+
+
+            data = j.slices;
+
+            var svg = d3.select("svg");
+            if (svg) {
+                svg.selectAll("*").remove();
+                svg.remove();
+            }
+
+            // append the svg obgect to the body of the page
+            // appends a 'group' element to 'svg'
+            // moves the 'group' element to the top left margin
+            var svg = d3.select("#shibo").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .attr("id", "chart")
+                .append("g")
+                .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+            // format date
+            for (p in data) {
+                slice = data[p];
+                slice.date = parseTime(slice.cutTaken);
+            }
+
+            // sort out scalingo
+            var totalReqsMax = d3.max(data, function (d) { return d.totalRequests; });
+            var rpsMax = d3.max(data, function (d) { return d.rps; });
+            var concurrencyMax = d3.max(data, function (d) { return d.concurrency; });
+            var averageMax = d3.max(data, function (d) { return d.averageResponseTime; });
+            var medianMax = d3.max(data, function (d) { return d.medianResponseTime; });
+            var totalReqsScale = Math.floor(Math.log10(totalReqsMax));
+            var rpsScale = Math.floor(Math.log10(rpsMax));
+            var concurrencyScale = Math.floor(Math.log10(concurrencyMax));
+            var averageScale = Math.floor(Math.log10(averageMax));
+            var medianScale = Math.floor(Math.log10(medianMax));
+
+            // lines __________________
+            var totalReqsLine = d3.line()
+                .x(function (d) {
+                    return x(d.date);
+                })
+                .y(function (d) {
+                    return y(d.totalRequests / Math.pow(10, totalReqsScale));
+                });
+
+            var rpsLine = d3.line()
+                .x(function (d) {
+                    return x(d.date);
+                })
+                .y(function (d) {
+                    return y(d.rps / Math.pow(10, rpsScale));
+                });
+
+            var concurrencyLine = d3.line()
+                .x(function (d) {
+                    return x(d.date);
+                })
+                .y(function (d) {
+                    return y(d.concurrency / Math.pow(10, concurrencyScale));
+                });
+
+            var averageLine = d3.line()
+                .x(function (d) {
+                    return x(d.date);
+                })
+                .y(function (d) {
+                    return y(d.averageResponseTime / Math.pow(10, averageScale));
+                });
+
+            var medianLine = d3.line()
+                .x(function (d) {
+                    return x(d.date);
+                })
+                .y(function (d) {
+                    return y(d.medianResponseTime / Math.pow(10, medianScale));
+                });
+
+            svg.append("text")
+                .attr("transform", "rotate(270, 82, 67)")
+                .text("© Superbenchmarker powered by d3")
+                .style("font-family", "arial")
+                .style("font-size", "9px")
+                .style("fill", "green");
+
+            d3.select("#totals").text("Total Requests (x" + Math.pow(10, totalReqsScale) + ")");
+            d3.select("#rpss").text("RPS (x" + Math.pow(10, rpsScale) + ")");
+            d3.select("#concurrencys").text("Concurrency (x" + Math.pow(10, concurrencyScale) + ")");
+            d3.select("#meds").text("Response Time - median (x" + Math.pow(10, medianScale) + ")");
+            d3.select("#avgs").text("Response Time - average (x" + Math.pow(10, averageScale) + ")");
+
+            // Scale the range of the data
+            x.domain(d3.extent(data, function (d) { return d.date; }));
+            y.domain([0, 10]);
+
+            // paths ____________________
+            svg.append("path")
+                .data([data])
+                .style("stroke", colours(0))
+                .attr("id", "totall")
+                .attr("class", "line")
+                .attr("d", totalReqsLine);
+
+            colours(8); // skip a colour
+
+            svg.append("path")
+                .data([data])
+                .style("stroke", colours(1))
+                .attr("id", "rpsl")
+                .attr("class", "line")
+                .attr("d", rpsLine);
+
+            svg.append("path")
+                .data([data])
+                .style("stroke", colours(2))
+                .attr("id", "concurrencyl")
+                .attr("class", "line")
+                .attr("d", concurrencyLine);
+
+            colours(9); // skip a colour
+
+            svg.append("path")
+                .data([data])
+                .style("stroke", colours(3))
+                .attr("id", "avgl")
+                .attr("class", "line")
+                .attr("d", averageLine);
+
+            svg.append("path")
+                .data([data])
+                .style("stroke", colours(4))
+                .attr("class", "line")
+                .attr("id", "medl")
+                .attr("d", medianLine);
+
+            // Add the X Axis
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            // Add the Y Axis
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            for (var i in lineNames) {
+                var name = lineNames[i];
+                d3.select("#" + name + "s").style("color", d3.select("#" + name + "l").style("stroke"));
+            }
+
+            function setOpacity() {
+                for (var i in lineNames) {
+                    var name = lineNames[i];
+                    d3.select("#" + name + "l").style("opacity", d3.select("#" + name).property("checked") ? 1 : 0);
+                }
+            }
+
+            setOpacity();
+            d3.selectAll("input").on("change", function () {
+                setOpacity();
+            });
+        }
+
+        function continuouslyLookForNewData() {
+
+            d3.select("#interim").remove();
+            d3.select("final").remove();
+
+            d3.select("head").append("script").attr("id", "interim").attr("src", "interim.js");
+            d3.select("head").append("script").attr("id", "final").attr("src", "final.js");
+
+            if (final.commandLine) { // if exists
+                loadData(final);
+            }
+            else {
+                if (interim.commandLine) {
+                    var len = interim.slices.length;
+                    if (datapointsSoFar < len) {
+                        loadData(interim);
+                        datapointsSoFar = len;
+                    }
+                }
+
+                setTimeout(continuouslyLookForNewData, 5000);
+            }
+        }
+
+        continuouslyLookForNewData();
+
+    </script>
+</body>
+</html>

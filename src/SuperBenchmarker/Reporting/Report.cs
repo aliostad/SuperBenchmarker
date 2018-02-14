@@ -12,7 +12,7 @@ namespace SuperBenchmarker.Reporting
         {
             Slices = new List<Slice>();
             Percentiles = new Dictionary<Decimal, int>();
-            StatusCodeSummary = new List<KeyValuePair<int, int>>();
+            StatusCodeSummary = new Dictionary<int, int>();
         }
 
         public string CommandLine { get; set; }
@@ -35,7 +35,7 @@ namespace SuperBenchmarker.Reporting
 
         public Dictionary<Decimal, int> Percentiles { get; set; }
 
-        public List<KeyValuePair<int, int>> StatusCodeSummary { get; set; }
+        public Dictionary<int, int> StatusCodeSummary { get; set; }
 
         public int Total { get; set; }
 

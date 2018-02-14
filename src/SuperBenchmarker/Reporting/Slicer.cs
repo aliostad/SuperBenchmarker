@@ -41,7 +41,7 @@ namespace SuperBenchmarker.Reporting
                 CutTaken = DateTimeOffset.Now,
                 TotalRequests = responses.Count,
                 Rps = Math.Round(stats.Length / seconds, 1),
-                StatusBreakdown = Reporter.BuildStatusSummary(stats.Select(x => x.StatusCode)).ToList(),
+                StatusBreakdown = Reporter.BuildStatusSummary(stats.Select(x => x.StatusCode)),
                 AverageResponseTime = stats.Length == 0 ? 0 :
                     Math.Round(stats.Average(x => x.TicksTaken * 1000 / Stopwatch.Frequency), 1),
                 MedianResponseTime = median
