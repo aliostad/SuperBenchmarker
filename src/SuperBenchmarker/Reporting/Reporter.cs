@@ -21,13 +21,12 @@ namespace SuperBenchmarker.Reporting
         private DateTimeOffset _start = DateTimeOffset.Now;
         private object _lock = new object();
         private int _lastSliceCount = 0;
-
-        public int SliceSeconds { get; }
+        private int _sliceSeconds = 0;
 
         public Reporter(string commandLine, int sliceSeconds, Func<int> concurrencyProvider)
         {
             _commandLine = commandLine;
-            SliceSeconds = sliceSeconds;
+            _sliceSeconds = sliceSeconds;
             _concurrencyProvider = concurrencyProvider;
         }
 
@@ -49,7 +48,7 @@ namespace SuperBenchmarker.Reporting
         {
             while(!token.IsCancellationRequested)
             {
-                await Task.Delay(SliceSeconds * 1000, token);
+                await Task.Delay(_sliceSeconds * 1000, token);
                 _slices.Enqueue(_slicer.Slice(_concurrencyProvider(), _responses.ToList()));
             }
         }
@@ -81,7 +80,7 @@ namespace SuperBenchmarker.Reporting
                 Start = _start,
                 End = DateTimeOffset.Now,
                 IsFinal = _cts.IsCancellationRequested,
-                ReportingSliceSeconds = SliceSeconds,
+                ReportingSliceSeconds = _sliceSeconds,
                 Slices = _slices.ToList(),
                 Total = _responses.Count
             };
