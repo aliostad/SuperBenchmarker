@@ -27,8 +27,13 @@ namespace SuperBenchmarker.Reporting
 
             _previousSliceTime = DateTimeOffset.Now;
             _previousSliceResponseCount = responses.Count;
-            var sorted = stats.Select(x => x.TicksTaken * 1000 / Stopwatch.Frequency).OrderByDescending(y => y).ToArray();
-            var median = sorted.Length == 0 ? 0 : sorted[sorted.Length / 2];
+            var median = 0d;
+            if (stats.Length > 0)
+            {
+                var sorted = stats.Select(x => x.TicksTaken * 1000 / Stopwatch.Frequency).OrderByDescending(y => y).ToArray();
+                median = Math.Round((double) sorted[sorted.Length / 2], 1);
+            }
+           
 
             return new Slice()
             {

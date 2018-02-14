@@ -102,7 +102,7 @@ namespace SuperBenchmarker.Reporting
         private Dictionary<decimal, int> BuildPercentiles()
         {
             int[] orderedList = (from x in _responses
-                                  orderby x
+                                  orderby x.TicksTaken
                                   select x.TicksTaken).Select(y => (int) (y * 1000 / Stopwatch.Frequency)).ToArray();
 
             return new Dictionary<decimal, int>
