@@ -335,7 +335,7 @@ namespace SuperBenchmarker
 
                 jss.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 var dtc = new IsoDateTimeConverter();
-                dtc.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.FFFK";
+                dtc.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK";
                 jss.Converters.Add(dtc);
 
                 File.WriteAllText(Path.Combine(reportFolder, 
