@@ -110,7 +110,7 @@ namespace SuperBenchmarker
                     var content = await response.Content.ReadAsByteArrayAsync();
                     if (_options.SaveResponses)
                     {
-                        // fire and forget not to affect time taken or TPS
+                        // fire and forget not to affect time taken or RPS
                         Task.Run(() =>
                             File.WriteAllBytes(Path.Combine(_options.ResponseFolder, (i + 1).ToString() +
                                                                                      GetExtensionFromContentType(
