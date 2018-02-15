@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SuperBenchmarker.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace SuperBenchmarker.Reporting
             Slices = new List<Slice>();
             Percentiles = new Dictionary<Decimal, int>();
             StatusCodeSummary = new Dictionary<int, int>();
+            Version = VersionHelper.GetVersion();
         }
 
         public string CommandLine { get; set; }
@@ -40,5 +42,7 @@ namespace SuperBenchmarker.Reporting
         public int Total { get; set; }
 
         public double Rps { get; set; }
+
+        public string Version { get; set; }
     }
 }

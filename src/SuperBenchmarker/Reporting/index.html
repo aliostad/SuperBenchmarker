@@ -53,6 +53,10 @@
             padding: 5px;
         }
 
+        .bold {
+            font-weight: bold;
+        }
+
         td {
             vertical-align: top;
         }
@@ -78,7 +82,7 @@
         <input type="checkbox" name="avg" id="avg" /> <span id="avgs">Response Time - Average</span>
     </p>
     <p>
-        <table border="0">
+        <table border="0" width="960">
             <tr>
                 <td width="400px">
                     <div>
@@ -137,6 +141,7 @@
     <script>
         // temp vars
         var slice = null,
+            paused = false,
             datapointsSoFar = 0,
             lineNames = ["total", "rps", "concurrency", "med", "avg"],
             lineLongNames = ["Total", "RPS", "Concurrency", "Median", "Average"],
@@ -170,7 +175,7 @@
             d3.select("#cmd").text(j.commandLine);
             d3.select("#start").text(j.start);
             d3.select("#finish").text(j.isFinal ? j.end : "");
-            d3.select("#status").text(j.isFinal ? "finished" : "running...");
+            d3.select("#status").text(j.isFinal ? "finished" : "running... (click on chart to pause or unpause updating)");
             d3.select("#s200").text("200: " + (j.statusCodeSummary["200"] ? j.statusCodeSummary["200"] : 0));
             d3.select("#s400").text("400: " + (j.statusCodeSummary["400"] ? j.statusCodeSummary["400"] : 0));
             d3.select("#s500").text("500: " + (j.statusCodeSummary["500"] ? j.statusCodeSummary["500"] : 0));
@@ -254,8 +259,8 @@
                 });
 
             svg.append("text")
-                .attr("transform", "rotate(270, 82, 67)")
-                .text("© Superbenchmarker powered by d3")
+                .attr("transform", "rotate(270, 93, 79)")
+                .text("© Superbenchmarker " + j.version + " powered by d3")
                 .style("font-family", "arial")
                 .style("font-size", "9px")
                 .style("fill", "green");
@@ -326,6 +331,44 @@
             svg.append("g")
                 .call(d3.axisLeft(y));
 
+            function mouseMoveHandler(mouse) {
+                d3.select(".mouse-line")
+                    .attr("d", function () {
+                        var d = "M" + mouse[0] + "," + height;
+                        d += " " + mouse[0] + "," + 0;
+                        return d;
+                    });
+
+                d3.selectAll(".hoverText").remove();
+
+                d3.selectAll(".line")
+                    .each(function (d, i) {
+                        var index = Math.floor(mouse[0] * d.length / width);
+                        if (index >= d.length)
+                            index = d.length - 1;
+
+                        var offset = 90;
+                        var dataPoint = d[index];
+
+                        if (i == 0) {
+                            svg.append("text")
+                                .text(dataPoint.cutTaken.split("T")[1].split("+")[0].split("-")[0].split(".")[0] +
+                                (paused ? " (paused)" : ""))
+                                .style("fill", "grey")
+                                .attr("class", "hoverText bold")
+                                .attr("x", width - offset)
+                                .attr("y", 12);
+                        }
+
+                        svg.append("text")
+                            .text(lineLongNames[i] + ": " + dataPoint[linePropertyNames[i]])
+                            .style("fill", d3.select("#" + lineNames[i] + "l").style("stroke"))
+                            .attr("class", "hoverText")
+                            .attr("x", width - offset)
+                            .attr("y", 24 + i * 12);
+                    });
+            }
+
             // hair line
             svg.append('svg:rect') // append a rect to catch mouse movements on canvas
                 .attr('width', width) // can't catch mouse events on a g element
@@ -339,33 +382,17 @@
                 }).on("mouseover", function () {
                     d3.select(".mouse-line")
                         .style("opacity", "1");
+                }).on("click", function () {
+                    paused = !paused;
+                    continuouslyLookForNewData();
+                    var mouse = d3.mouse(this);
+                    mouseMoveHandler(mouse);
                 }).on('mousemove', function () {
                     var mouse = d3.mouse(this);
-                    d3.select(".mouse-line")
-                        .attr("d", function () {
-                            var d = "M" + mouse[0] + "," + height;
-                            d += " " + mouse[0] + "," + 0;
-                            return d;
-                        });
-
-                    d3.selectAll(".hoverText").remove();
-
-                    d3.selectAll(".line")
-                        .each(function (d, i) {
-                            var index = Math.floor(mouse[0] * d.length / width);
-                            if (index >= d.length)
-                                index = d.length - 1;
-
-                            var dataPoint = d[index];
-                            svg.append("text")
-                                .text(lineLongNames[i] + ": " + dataPoint[linePropertyNames[i]])
-                                .style("fill", d3.select("#" + lineNames[i] + "l").style("stroke"))
-                                .attr("class", "hoverText")
-                                .attr("x", width - 70)
-                                .attr("y", 12 + i * 12);
-                        });
+                    mouseMoveHandler(mouse);
                 });
 
+            
 
             for (var i in lineNames) {
                 var name = lineNames[i];
@@ -387,25 +414,30 @@
 
         function continuouslyLookForNewData() {
 
-            d3.select("#interim").remove();
-            d3.select("final").remove();
-
-            d3.select("head").append("script").attr("id", "interim").attr("src", "interim.js");
-            d3.select("head").append("script").attr("id", "final").attr("src", "final.js");
-
-            if (final.commandLine) { // if exists
-                loadData(final);
+            if (paused) {
+                setTimeout(continuouslyLookForNewData, 3000);
             }
             else {
-                if (interim.commandLine) {
-                    var len = interim.slices.length;
-                    if (datapointsSoFar < len) {
-                        loadData(interim);
-                        datapointsSoFar = len;
-                    }
-                }
+                d3.select("#interim").remove();
+                d3.select("final").remove();
 
-                setTimeout(continuouslyLookForNewData, 3000);
+                d3.select("head").append("script").attr("id", "interim").attr("src", "interim.js");
+                d3.select("head").append("script").attr("id", "final").attr("src", "final.js");
+
+                if (final.commandLine) { // if exists
+                    loadData(final);
+                }
+                else {
+                    if (interim.commandLine) {
+                        var len = interim.slices.length;
+                        if (datapointsSoFar < len) {
+                            loadData(interim);
+                            datapointsSoFar = len;
+                        }
+                    }
+
+                    setTimeout(continuouslyLookForNewData, 3000);
+                }
             }
         }
 

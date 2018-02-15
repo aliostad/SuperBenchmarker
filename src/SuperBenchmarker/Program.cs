@@ -136,7 +136,7 @@ namespace SuperBenchmarker
             if (Directory.Exists(reportFolder))
                 reportFolder += Guid.NewGuid().ToString("N");
 
-            Directory.CreateDirectory(reportFolder);
+            reportFolder = Directory.CreateDirectory(reportFolder).FullName;
 
             ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
 

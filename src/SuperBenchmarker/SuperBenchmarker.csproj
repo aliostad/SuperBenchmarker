@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internal\VersionHelper.cs" />
     <Compile Include="Reporting\Report.cs" />
     <Compile Include="Reporting\Reporter.cs" />
     <Compile Include="Reporting\ResponseLog.cs" />
