@@ -132,7 +132,10 @@ namespace SuperBenchmarker
             SetupSsl(commandLineOptions);
 
             var then = DateTime.Now;
-            var reportFolder = Path.Combine(Environment.CurrentDirectory, then.ToString("yyyy-MM-dd_HH-mm-ss"));
+            var reportFolder = commandLineOptions.ReportFolder ?? Path.Combine(Environment.CurrentDirectory, then.ToString("yyyy-MM-dd_HH-mm-ss.ffffff"));
+            if (Directory.Exists(reportFolder))
+                reportFolder += Guid.NewGuid().ToString("N");
+
             Directory.CreateDirectory(reportFolder);
 
             ConsoleWriteLine(ConsoleColor.DarkCyan, "Starting at {0}", then);
@@ -195,7 +198,7 @@ namespace SuperBenchmarker
 
                 source.Cancel();
                 var report = reporter.Finish();
-                SaveReport(report, reportFolder);
+                SaveReport(report, reportFolder, !commandLineOptions.DontBrowse);
 
                 foreach (var stat in report.StatusCodeSummary)
                 {
@@ -252,6 +255,13 @@ namespace SuperBenchmarker
         private static Reporter Run(CommandLineOptions commandLineOptions, CancellationTokenSource source,
             IAsyncRequester requester, int total, string reportFolder)
         {
+            var until = DateTimeOffset.MaxValue;
+            if (!commandLineOptions.IsDryRun && commandLineOptions.NumberOfSeconds > 0)
+            {
+                commandLineOptions.NumberOfRequests = int.MaxValue / 10;
+                until = DateTimeOffset.Now.AddSeconds(commandLineOptions.NumberOfSeconds + commandLineOptions.WarmupSeconds);
+            }
+
             var warmUpTotal = 0;
             var customThreadPool = new CustomThreadPool(new WorkItemFactory(
                 requester,
@@ -287,7 +297,7 @@ namespace SuperBenchmarker
                 }
 
                 reporter.AddResponse((HttpStatusCode)args.Result.Status, (long) args.Result.Ticks);
-                ConsiderUpdatingReport(reporter, reportFolder);
+                ConsiderUpdatingReport(reporter, reportFolder, !commandLineOptions.DontBrowse);
 
                 var n = Interlocked.Increment(ref total);
                 var logData = new LogData()
@@ -301,11 +311,22 @@ namespace SuperBenchmarker
 
                 _logDataQueue.Enqueue(logData);
 
-                if(!commandLineOptions.Verbose)
+                if (DateTimeOffset.Now > until)
+                {
+                    source.Cancel();
+                }
+
+                if (!commandLineOptions.Verbose)
                     ConsoleWrite(ConsoleColor.DarkYellow, "\r{0}	(RPS: {1})			", total, Math.Round(total * 1000f / _stopwatch.ElapsedMilliseconds, 1));
             };
 
             customThreadPool.Start(commandLineOptions.NumberOfRequests);
+
+            // set until - only after started 
+            if (!commandLineOptions.IsDryRun && commandLineOptions.NumberOfSeconds > 0)
+            {
+                until = DateTimeOffset.Now.AddSeconds(commandLineOptions.NumberOfSeconds + commandLineOptions.WarmupSeconds);
+            }
 
             while (!source.IsCancellationRequested)
             {
@@ -315,16 +336,16 @@ namespace SuperBenchmarker
             return reporter;
         }
 
-        private static void ConsiderUpdatingReport(Reporter reporter, string reportFolder)
+        private static void ConsiderUpdatingReport(Reporter reporter, string reportFolder, bool browse)
         {
             var report = reporter.InterimReport();
             if(report != null)
             {
-                SaveReport(report, reportFolder);
+                SaveReport(report, reportFolder, browse);
             }
         }
 
-        private static void EmitIndexHtmlIfNeededAndBrowse(string reportFolder)
+        private static void EmitIndexHtmlIfNeededAndBrowse(string reportFolder, bool browse)
         {
             var fn = Path.Combine(reportFolder, "index.html");
             if(!File.Exists(fn))
@@ -335,13 +356,14 @@ namespace SuperBenchmarker
                 ms = new MemoryStream();
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("SuperBenchmarker.Reporting.d3.js").CopyTo(ms);
                 File.WriteAllBytes(Path.Combine(reportFolder, "d3.js"), ms.ToArray());
-                Process.Start("file:///" + fn);
+                if (browse)
+                    Process.Start("file:///" + fn);
             }
         }
 
-        private static void SaveReport(Report report, string reportFolder)
+        private static void SaveReport(Report report, string reportFolder, bool browse)
         {
-            EmitIndexHtmlIfNeededAndBrowse(reportFolder);
+            EmitIndexHtmlIfNeededAndBrowse(reportFolder, browse);
             try
             {
                 var jss = new JsonSerializerSettings()

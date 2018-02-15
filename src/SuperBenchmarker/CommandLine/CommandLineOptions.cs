@@ -16,6 +16,9 @@ namespace SuperBenchmarker
         [Option('n', "numberOfRequests", Required = false, HelpText = "Total number of requests", Default = 100)]
         public int NumberOfRequests { get; set; }
 
+        [Option('N', "numberOfSeconds", Required = false, HelpText = "Number of seconds to run the test. If specified, -n will be ignored.")]
+        public int NumberOfSeconds { get; set; }
+
         [Option('y', "delayInMillisecond", Required = false, HelpText = "Delay in millisecond", Default = 0)]
         public int DelayInMillisecond { get; set; }
 
@@ -85,11 +88,18 @@ namespace SuperBenchmarker
         [Option('j', "jsonCount", Required = false, HelpText = "Captures number of elements under the path e.g. root/leaf1/leaf2 finds count of leaf2 children - stores in the log as another parameter")]
         public string CaptureJsonElementCount { get; set; }
 
-        [Option('W', "WarmUpPeriod", Required = false, Default = 0,  HelpText = "Number of seconds to gradually increase number of concurrent users. Warm-up calls do not affect stats.")]
+        [Option('W', "warmUpPeriod", Required = false, Default = 0,  HelpText = "Number of seconds to gradually increase number of concurrent users. Warm-up calls do not affect stats.")]
         public int WarmupSeconds { get; set; }
 
-        [Option('P', "ReportSliceSeconds", Required = false, Default = 3, HelpText = "Number of seconds as interval for reporting slices. E.g. if chosen as 5, report charts have 5 second intervals.")]
+        [Option('P', "reportSliceSeconds", Required = false, Default = 3, HelpText = "Number of seconds as interval for reporting slices. E.g. if chosen as 5, report charts have 5 second intervals.")]
         public int ReportSliceSeconds { get; set; }
+
+        [Option('F', "reportFolder", Required = false, HelpText = "Name of the folder where report files get stored. By default it is in yyyy-MM-dd_HH-mm-ss.ffffff of the start time.")]
+        public string ReportFolder { get; set; }
+
+        [Option('B', "dontBrowseToReports", Required = false, HelpText = "By default it, sb opens the browser with the report of the running test. If specified, it wil not browse.")]
+        public bool DontBrowse { get; set; }
+
 
         public string GetTheHelp()
         {
