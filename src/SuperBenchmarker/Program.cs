@@ -146,7 +146,7 @@ namespace SuperBenchmarker
                     ? (IAsyncRequester)new Requester(commandLineOptions)
                     : (IAsyncRequester)new TimeBasedRequester(commandLineOptions);
 
-                var writer = new StreamWriter(commandLineOptions.LogFile) { AutoFlush = false };
+                var writer = new StreamWriter(commandLineOptions.LogFile ?? Path.Combine(reportFolder, "run.log")) { AutoFlush = false };
                 _stopwatch.Restart();
                 if (commandLineOptions.SaveResponses)
                 {

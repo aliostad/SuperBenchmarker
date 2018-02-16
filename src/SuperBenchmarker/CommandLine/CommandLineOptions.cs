@@ -34,7 +34,7 @@ namespace SuperBenchmarker
         [Option('p', "plugin", Required = false, HelpText = "Name of the plugin (DLL) to replace placeholders. Should contain one class which implements IValueProvider. Must reside in the same folder.")]
         public string Plugin { get; set; }
 
-        [Option('l', "logfile", Required = false, HelpText = "Path to the log file storing run stats", Default = "run.log")]
+        [Option('l', "logfile", Required = false, HelpText = "Path to the log file storing run stats")]
         public string LogFile { get; set; }
 
         [Option('f', "file", Required = false, HelpText = "Path to CSV file providing replacement values for the test")]
