@@ -1,7 +1,7 @@
 SuperBenchmarker
 ================
 
-Superbenchmarker is a load generator command-line tool for performance testing HTTP APIs and Web Site. Inspired by Apache Benchmark, it is meant to become Apache Benchmark (ab.exe) on steriods. It reports teh result at the end of the test in the terminal window but it also constantly reports back in a web interface
+Superbenchmarker is a load generator command-line tool for performance testing HTTP APIs and websites. Inspired by Apache Benchmark, it is meant to become Apache Benchmark (ab.exe) on steriods. It displays final results at the end of the test in the terminal window but it also constantly reports back in a web interface.
 
 ![screenshot](https://raw.github.com/aliostad/SuperBenchmarker/master/sb-reports.png)
 
@@ -11,15 +11,15 @@ Superbenchmarker is a load generator command-line tool for performance testing H
 Superbenchmarker (sb) runs on Windows and requires .NET 4.5+ installed on the box.
 
 ## Installation
-Easiest way to install sb is to use [chocolatey]((https://github.com/chocolatey/chocolatey/wiki/Installation#command-line)). Once you have installed chocolatey, simply:
+Easiest way to install sb is to use [chocolatey](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line). Once you have installed chocolatey, simply run:
 
 ``` bash
-cinst SuperBenchmarker
+> cinst SuperBenchmarker
 ```
 and to update your version of sb:
 
 ``` bash
-cup SuperBenchmarker
+> cup SuperBenchmarker
 ```
 
 You can also download the lastest version from the `Download` [folder](https://github.com/aliostad/SuperBenchmarker/tree/master/download) of this github repository. This is a single exe with all dependencies IL-merged.
@@ -54,7 +54,7 @@ sb -u "http://example.com/api/car/123" -n 1000 -m DELETE
 
 To dry-run a particular set-up you can use `-d (--dryRun)` which fires a single requests and outputs the result.
 
-# Taking it to next level
+# Taking it to the next level
 ## Send custom headers/payload to the API
 In order to send custom headers (or payload), you need a template file. A template file is a text file which - similar to HTTP - has headers and values in each line, then an empty line, and in the end the payload (assuming you are sending a text payload).
 
@@ -70,7 +70,7 @@ And then run it using `-t (--template)`:
 sb -u "http://example.com/api/car/123" -n 1000 -t template.txt
 ```
 
-Another example, to make a POST request sending a JSON peyload, create this file (note the empty line between headers and body):
+Another example, to make a POST request sending a JSON peyload, create this file (**NOTE** the empty line between headers and body):
 
 ```
 Content-Type: application/json
@@ -81,13 +81,13 @@ Content-Type: application/json
 ```
 
 ## Parameterise the requests
-It is all well and good to send same requests but in order to truly test your application, you would need to make different requests. You can parameterise the URL and the template. Parameters are defined by triple curly braces:
+It is all well and good to send the same request but in order to truly test your application, you would need to make different requests. You can parameterise the URL and the template. Parameters are defined by triple curly braces:
 
 ``` bash
 sb -u "http://example.com/api/car/{{{carId}}}"
 ```
 
-here above we defined a parameter named carId. sb has built-in support for sending random STRING, DATE, DATETIME, DATETIMEOFFSET, INTEGER, DOUBLE, NAME and GUID - and for some data type it can do ranges. For example:
+in the above, we defined a parameter named *carId*. sb has built-in support for sending random STRING, DATE, DATETIME, DATETIMEOFFSET, INTEGER, DOUBLE, NAME and GUID - and for some data type it can do ranges. For example:
 
 ``` bash
 sb -u "http://example.com/api/car/{{{RAND_INTEGER:[1:1000000]}}}"
@@ -95,13 +95,13 @@ sb -u "http://example.com/api/car/{{{RAND_INTEGER:[1:1000000]}}}"
 
 sends random integers in the range of 1 and 1,000,000.
 
-Of course, random values do not always work and data needs to be taken from a pool of known values. In this case you can create a data file containing headers, matching the parameter names you have. (By default, only URL will be parameterised and if you need to parameterise the body too, you need to add option `-b` too(. You pass the name of the file using `-f (file)` which assumes the file is a CSV. You can shuffle the records using `-U (--shuffleData)` flag. TSV is also supported using option `-a (--TSV)`, here with shuffling the data:
+Of course, random values do not always work and data needs to be taken from a pool of known values. In this case you can create a data file containing headers, matching the parameter names you have. (By default, only URL will be parameterised and if you need to parameterise the body too, you need to add flag `-b` too(. You pass the name of the file using `-f (file)` which assumes the file is a CSV. You can shuffle the records using `-U (--shuffleData)` flag. TSV is also supported using option `-a (--TSV)`, here with shuffling the data:
 
 ``` bash
 sb -u "http://example.com/api/car/{{{carId}}}" -f carIds.tsv -a -U
 ```
 
-Let's look an example. So let's say you are testing car update API (which needs a PUT with payload) and you need to parameterise car id and their prices. Prepare a data file called testdata.csv:
+Let's look an example. So let's say you are testing car update API (which needs a PUT method with a payload) and you need to parameterise car id and their prices. Prepare a data file called testdata.csv:
 
 ```
 carId,price
@@ -120,7 +120,7 @@ some-header: some-value
 }
 ```
 
-And now run your test. NOTE that `-b` needs to be supplied to parameterise body:
+And now run your test. **NOTE** that `-b` needs to be supplied to parameterise body:
 
 ``` bash
 sb -u "http://example.com/api/car/{{{carId}}}" -f testdata.csv -t template.txt -m PUT -b
@@ -224,6 +224,34 @@ sb -u "https://example.com/api/things" -g 2
 ## Warmup
 You can use `-W` option to provide number of seconds for warmup where the results are not included in the test.
 
+## Plugin development
+In order to build a a plugin to have full control over parameterisation, you can install Superbenchmarker nuget package:
+
+```
+Package-Install superbenchmarker
+```
+
+This adds a reference to sb and then you implement a public class implementing IValueProvider:
+
+``` csharp
+public class MyPlugin: IValueProvider
+{
+    private IList<string> _ids; // e.g. populated from a database
+    
+    public IDictionary<string, object> GetValues(int index)
+    {
+        // return a dictionary with name of the parameters and their corresponding values.
+        // index is the 0-based count of the requests sent. For example, if index is 9, it is the 10th request
+        ...
+        return new Dictionary { {"ID", _ids(index)} };
+    }
+}
+```
+
+Then run this commmand (**NOTE** name of the parameter returned in the dictionary is the same as the one defined below):
+``` bash
+sb -u "https://example.com/api/car/{{{ID}}}" -p myplugin.dll
+```
 
 # Summary
 
