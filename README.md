@@ -81,7 +81,7 @@ Content-Type: application/json
 ```
 
 ## Parameterise the requests
-It is all well and good to send the same request but in order to truly test your application, you would need to make different requests. You can parameterise the URL and the template. Parameters are defined by triple curly braces:
+It is all well and good to keep sending the same request but in order to truly test your application, you would need to make different requests. You can parameterise the URL and the template. Parameters are defined by triple curly braces:
 
 ``` bash
 sb -u "http://example.com/api/car/{{{carId}}}"
@@ -131,11 +131,11 @@ Values from your dataset will be used to populate and send requests. Once it has
 You can also create a data provider *plugin* to fully control the process. See below for more information.
 
 ## Real-time report chart/UI
-Soon after running the test, your browser will be directed to a file which gets updated in real-time with the progress of your test. In order to prevent this, you can use `-B (--dontBrowseToReports)` flag. If you have use the `-B` option and then you decide to see the progress, simply browse the file `index.html` in subfolder (inside the execution folder) with a timestamped name (e.g. 2018-02-16_10-12-53.898088). If you would like to change the name, use `-F` option and provide an alternative folder name.
+Soon after running the test, your browser will be directed to a file which gets updated in real-time with the progress of your test. In case you do not this to happen, simple use `-B (--dontBrowseToReports)` flag. If you have used `-B` flag and but then changed your mind and you decide to see the progress, simply browse the file `index.html` in subfolder (inside the execution folder) with a name representing timestamp the test started (e.g. 2018-02-16_10-12-53.898088). If you would like to change the name, use `-F` option and provide an alternative folder name.
 
-This folder, after the test finishes, will contain all information you need to go back. You can simply zip it up and keep it for archiving, and go back to when you need to. The folder contains an `interim.js` file while the test is running and gets replaced with the "final.js". They contain the data powering charts.
+This folder, after the test finishes, will contain all information you need about your test. You can simply zip it up and keep it for archiving, and go back it to when you need to. The folder contains an `interim.js` file while the test is running and gets replaced with the "final.js" after the test finishes. These files contain the data powering charts.
 
-Interacting with the chart is straightforward. Chart gets updated every 3 seconds and the cyan vertical line shows the precision of mouse movements for navigating the chart. As more data arrives, the vertical line gets thinner, i.e. more precision. You can pause/unpause the chart update by clicking on the chart.  
+Interacting with the chart is straightforward. The chart gets updated every 3 seconds and the thickness of the cyan vertical line shows the precision of mouse movements for navigating the chart. As more data arrives, the vertical line gets thinner, i.e. more precision. You can pause/unpause the chart update by clicking on the chart.  
 
 The data slices are taken every 3 seconds. You can change it by using option `-P (--reportSliceSeconds)`. For short burst tests perhaps using one second is more appropriate (`-P 1`):
 
@@ -144,7 +144,7 @@ sb -u "http://example.com/api/cars -N 60 -P 1
 ```
 
 ## Parameters to control terminal output
-The terminal output is by no means a second class citizen. For debugging purposes that is the best option, to be able to see the request, headers, etc. Bear in mind, outputting more content to the terminal can impact the test results hence only useful for debugging.
+The terminal output is by no means a second class citizen. For debugging purposes that is the best option, e.g. to be able to see the request, headers, etc. Bear in mind, outputting more content to the terminal can impact the test results hence only useful for debugging.
 
 ![screenshot](https://raw.github.com/aliostad/SuperBenchmarker/master/SuperBenchmarker2.png)
 
@@ -164,7 +164,7 @@ sb logs all such information in its `run.log` file, stored inside the folder whe
  - index of the request (they can be out of order)
  - numeric value of the HTTP status code
  - time taken in millisecond
- - name and value of any parameter in the format of `<name>=<value>`. These parameters include jsonCount or regex extraction (see below). By default, value of the parameter is truncated and capped to 50 characters. To prevent that, use flag `-c (--dontcap)`
+ - one column per each parameter in the format of `<name>=<value>`. These parameters include jsonCount or regex extraction (see below). By default, value of the parameter is truncated and capped to 50 characters. To prevent that, use flag `-C (--dontcap)`
 
 Sometimes you might be interested to save the whole response body. In this case, use flag `-z` to store responses in "responses" subfolder. If you would like to store in another folder, use `-w`:
 
@@ -185,13 +185,13 @@ Occasionaly, all you need is a small piece of information out of the response bo
     }
 }
 ```
-You use this command line to capture the count in the `run.log`:
+the array is located at path "foo/bar" and you would use this command to capture the count in the `run.log`:
 
 ``` bash
 sb -u "http://example.com/api/cars" -j "foo/bar"
 ```
 
-if the result from the server itself is an array, use empty string as the path:
+if the result from the server itself is an array at the root, use empty string as the path:
 
 ``` bash
 sb -u "http://example.com/api/cars" -j ""
