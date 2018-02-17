@@ -224,7 +224,7 @@ sb -u "https://example.com/api/things" -g 2
 ## Warmup
 You can use `-W` option to provide number of seconds for warmup where the results are not included in the test.
 
-## Plugin development
+## Plugin development
 In order to build a a plugin to have full control over parameterisation, you can install Superbenchmarker nuget package:
 
 ```
