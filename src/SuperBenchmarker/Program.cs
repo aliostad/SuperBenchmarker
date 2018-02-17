@@ -52,7 +52,7 @@ namespace SuperBenchmarker
 
                     var s = string.Join("\t", new[]
                    {
-                        data.EventDate.ToString(),
+                        data.EventDate.ToString("yyyy-MM-ddTHH:mm:ss.fff"),
                         data.Index.ToString(),
                         data.StatusCode.ToString(),
                         data.Millis.ToString(),
@@ -376,10 +376,17 @@ namespace SuperBenchmarker
                 dtc.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK";
                 jss.Converters.Add(dtc);
 
-                File.WriteAllText(Path.Combine(reportFolder, 
-                    report.IsFinal ? "final.js" : "interim.js"), 
+                var interim = Path.Combine(reportFolder, "interim.js");
+                var final = Path.Combine(reportFolder, "final.js");
+                var fileName = report.IsFinal ? final : interim;
+
+                File.WriteAllText(fileName, 
                     string.Format("var {0}={1};", report.IsFinal ? "final" : "interim",
                     JsonConvert.SerializeObject(report, jss)));
+
+                if (report.IsFinal)
+                    File.Delete(interim);
+
             }
             catch (Exception e)
             {

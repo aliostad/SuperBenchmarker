@@ -24,5 +24,19 @@
             num = Math.Min(orderedList.Count - 1, num);
             return orderedList[num];
         }
+
+        public static void Shuffle<T>(this IList<T> list, int spareFirstN = 0)
+        {
+            var r = new Random();
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = r.Next(spareFirstN, n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
     }
 }

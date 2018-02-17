@@ -64,7 +64,7 @@ namespace SuperBenchmarker
             else if (!string.IsNullOrEmpty(options.ValuesFile)) // csv values file
             {
                 _valueProvider = new SeparatedFileValueProvider(options.ValuesFile,
-                    options.IsTsv ? '\t' : ',');
+                    options.IsTsv ? '\t' : ',', options.Shuffle);
             }
         }
 
@@ -152,7 +152,7 @@ namespace SuperBenchmarker
                         parameters[Program.ResponseRegexExtractParamName] = match.Groups[match.Groups.Count - 1].Value;
                 }
                 
-                if(textContent != null && !string.IsNullOrEmpty(_options.CaptureJsonElementCount))
+                if(textContent != null && _options.CaptureJsonElementCount != null)
                 {
                     try
                     {

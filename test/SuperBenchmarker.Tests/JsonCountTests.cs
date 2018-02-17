@@ -31,5 +31,13 @@ namespace SuperBenchmarker.Tests
             var text = File.ReadAllText("a.json");
             Assert.Equal(null, JsonCounter.Count(text, "recommendations/bibi"));
         }
+
+        [Fact]
+        public void CanCountAtRoot()
+        {
+            var text = "[ {\"a\": 1}, {}, {}, \"dsd\", 1]";
+            Assert.Equal(5, JsonCounter.Count(text, ""));
+        }
+
     }
 }

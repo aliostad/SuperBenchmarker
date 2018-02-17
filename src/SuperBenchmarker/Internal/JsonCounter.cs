@@ -11,8 +11,8 @@ namespace SuperBenchmarker
     {
         public static int? Count(string text, string path)
         {
-            var segments = path.Split('/');
-            var j = JObject.Parse(text);
+            var segments = path==string.Empty ? new string[0] : path.Split('/');
+            var j = JToken.Parse(text);
             return FindRecursively(j, segments, 0);
         }
 
@@ -21,7 +21,8 @@ namespace SuperBenchmarker
 
             if (segments.Length == index)
             {
-                return j.Children().Where(x => x.Type == JTokenType.Object).Count();
+                return j.Children().Where(x => x.Type.IsIn(JTokenType.Object, JTokenType.Boolean, JTokenType.Bytes,
+                        JTokenType.Date, JTokenType.Float, JTokenType.Guid, JTokenType.Integer, JTokenType.String, JTokenType.TimeSpan)).Count();
             }
             else
             {
@@ -31,10 +32,15 @@ namespace SuperBenchmarker
                 var nextJ = j[segments[index]];
                 if (nextJ == null)
                     return null;
-                return nextJ.Type == JTokenType.Object || nextJ.Type == JTokenType.Array
+                return nextJ.Type.IsIn(JTokenType.Object, JTokenType.Array)
                     ? FindRecursively(nextJ, segments, index + 1)
                     : null;
             }
+        }
+
+        private static bool IsIn<T>(this T me, params T[] e)
+        {
+            return e.Any(x => x.Equals(me));
         }
     }
 }

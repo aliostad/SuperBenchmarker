@@ -17,12 +17,16 @@ namespace SuperBenchmarker
         private Random _random = new Random();
         private char _separator;
 
-        public SeparatedFileValueProvider(string fileName, char separator = ',')
+        public SeparatedFileValueProvider(string fileName, char separator = ',', bool shuffle = false)
         {
             _separator = separator;
             _lines = File.ReadAllLines(fileName);
-
             _headers = ParseLine(_lines[0]);
+
+            if (shuffle && _lines.Length > 0)
+            {
+                _lines.Shuffle(1);
+            }
 
             if (_lines.Length == 1)
             {

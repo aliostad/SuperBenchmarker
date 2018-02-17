@@ -100,6 +100,8 @@ namespace SuperBenchmarker
         [Option('B', "dontBrowseToReports", Required = false, HelpText = "By default it, sb opens the browser with the report of the running test. If specified, it wil not browse.")]
         public bool DontBrowse { get; set; }
 
+        [Option('U', "shuffleData", Required = false, HelpText ="If specified, shuffles the dataset provided by -f option.")]
+        public bool Shuffle { get; set; }
 
         public string GetTheHelp()
         {
