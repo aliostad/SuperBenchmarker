@@ -54,6 +54,7 @@ sb -u "http://example.com/api/car/123" -n 1000 -m DELETE
 
 To dry-run a particular set-up you can use `-d (--dryRun)` which fires a single requests and outputs the result.
 
+# Taking it to next level
 ## Send custom headers/payload to the API
 In order to send custom headers (or payload), you need a template file. A template file is a text file which - similar to HTTP - has headers and values in each line, then an empty line, and in the end the payload (assuming you are sending a text payload).
 
@@ -212,17 +213,19 @@ you would use the commadn below to capture the ID in the log file:
 sb -u "http://example.com/api/yourid" -R "Your ID is: (\d+)"
 ```
 
-## Other options
+# Other options
 
-### Connection options: proxy and TLS
+## Connection options: proxy and TLS
 Use `-x` if you need the client to use default proxy. Using option `-g` you can set the TLS version. For example, to use TLS 1.2:
 
 ``` bash
 sb -u "https://example.com/api/things" -g 2
 ```
+## Warmup
+You can use `-W` option to provide number of seconds for warmup where the results are not included in the test.
 
 
-## Summary
+# Summary
 
 ```
   -c, --concurrency            (Default: 1) Number of concurrent requests
