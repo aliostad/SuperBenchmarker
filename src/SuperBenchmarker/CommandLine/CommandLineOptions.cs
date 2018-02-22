@@ -73,7 +73,7 @@ namespace SuperBenchmarker
         [Option('z', "saveResponses", Required = false, HelpText = "saves responses in -w parameter or if not provided in\\response_<timestamp>")]
         public bool SaveResponses { get; set; }
 
-        [Option('w', "responsesFolder", Required = false, HelpText = "folder to save responses in if and only if -w parameter is set")]
+        [Option('w', "responsesFolder", Required = false, HelpText = "folder to save responses in if and only if -z parameter is set")]
         public string ResponseFolder { get; set; }
 
         [Option('?', "help", Required = false, HelpText = "Displays this help.")]
@@ -82,7 +82,7 @@ namespace SuperBenchmarker
         [Option('C', "dontcap", Required = false, HelpText = "Don't Cap to 50 characters when Logging parameters")]
         public bool DontCapLoggingParameters { get; set; }
 
-        [Option('R', "responseregex", Required =false, HelpText ="Regex to extract from response. If it has groups, it retrieves the last group.")]
+        [Option('R', "responseRegex", Required =false, HelpText ="Regex to extract from response. If it has groups, it retrieves the last group.")]
         public string ResponseExtractionRegex { get; set; }
 
         [Option('j', "jsonCount", Required = false, HelpText = "Captures number of elements under the path e.g. root/leaf1/leaf2 finds count of leaf2 children - stores in the log as another parameter")]
