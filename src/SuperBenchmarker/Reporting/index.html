@@ -173,7 +173,7 @@
             d3.select("#finish").text(j.isFinal ? j.end : "");
             d3.select("#status").text(j.isFinal ? "finished" : "running... (click on chart to pause or unpause updating)");
 
-            var statusSummaryArray = []
+            var statusSummaryArray = [];
             for (var status in j.statusCodeSummary) {
                 statusSummaryArray.push(status + ": " + j.statusCodeSummary[status]);
             }
