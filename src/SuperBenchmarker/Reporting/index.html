@@ -125,11 +125,7 @@
                     </div>
                     <div>
                         <span class="label">Status breakdown: </span>
-                        <ul>
-                            <li id="s200"></li>
-                            <li id="s400"></li>
-                            <li id="s500"></li>
-                        </ul>
+                        <ul id="statusSummary"></ul>
                     </div>
                     <div>
 
@@ -176,9 +172,20 @@
             d3.select("#start").text(j.start);
             d3.select("#finish").text(j.isFinal ? j.end : "");
             d3.select("#status").text(j.isFinal ? "finished" : "running... (click on chart to pause or unpause updating)");
-            d3.select("#s200").text("200: " + (j.statusCodeSummary["200"] ? j.statusCodeSummary["200"] : 0));
-            d3.select("#s400").text("400: " + (j.statusCodeSummary["400"] ? j.statusCodeSummary["400"] : 0));
-            d3.select("#s500").text("500: " + (j.statusCodeSummary["500"] ? j.statusCodeSummary["500"] : 0));
+
+            var statusSummaryArray = []
+            for (var status in j.statusCodeSummary) {
+                statusSummaryArray.push("<b>" + status + "</b>: " + j.statusCodeSummary[status]);
+            }
+            statusSummaryArray.sort();
+
+            var statusSummary = d3.select("#statusSummary");
+
+            statusSummary.selectAll('li')
+                .data(statusSummaryArray)
+                .enter()
+                .append('li')
+                .html(String);
 
             data = j.slices;
 
