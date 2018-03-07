@@ -182,8 +182,9 @@
 
             var statusSummary = d3.select("#statusSummary");
             statusSummary.selectAll("*").remove();
-            statusSummary
+            statusSummary.selectAll('li')
                 .data(statusSummaryArray)
+                .enter()
                 .append('li')
                 .text(function (s) {
                     return s;
