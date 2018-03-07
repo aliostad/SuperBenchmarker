@@ -177,15 +177,17 @@
             for (var status in j.statusCodeSummary) {
                 statusSummaryArray.push(status + ": " + j.statusCodeSummary[status]);
             }
+
             statusSummaryArray.sort();
 
             var statusSummary = d3.select("#statusSummary");
-
-            statusSummary.selectAll('li')
+            statusSummary.selectAll("*").remove();
+            statusSummary
                 .data(statusSummaryArray)
-                .enter()
                 .append('li')
-                .html(String);
+                .text(function (s) {
+                    return s;
+                });
 
             data = j.slices;
 
