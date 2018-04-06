@@ -70,7 +70,7 @@ And then run it using `-t (--template)`:
 sb -u "http://example.com/api/car/123" -n 1000 -t template.txt
 ```
 
-Another example, to make a POST request sending a JSON peyload, create this file (**NOTE** the empty line between headers and body):
+Another example, to make a POST request sending a JSON payload, create this file (**NOTE** the empty line between headers and body):
 
 ```
 Content-Type: application/json
