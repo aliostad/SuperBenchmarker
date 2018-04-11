@@ -36,3 +36,4 @@ artifacts/
 script.sql
 *.nupkg
 .vs/
+*.userprefs
