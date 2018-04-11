@@ -7,6 +7,16 @@
 		<OutputType>Exe</OutputType>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Reporting\d3.js" />
+	  <None Remove="Reporting\index.html" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="Reporting\d3.js">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="Reporting\index.html" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
 		<PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.4" />
 		<PackageReference Include="CommandLineParser" Version="2.2.1" />
