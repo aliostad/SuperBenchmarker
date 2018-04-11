@@ -356,8 +356,27 @@ namespace SuperBenchmarker
                 ms = new MemoryStream();
                 Assembly.GetExecutingAssembly().GetManifestResourceStream("SuperBenchmarker.Reporting.d3.js").CopyTo(ms);
                 File.WriteAllBytes(Path.Combine(reportFolder, "d3.js"), ms.ToArray());
+                var url = "file:///" + fn;
+                url = url.Replace("////", "///");
+                Console.WriteLine($"Browsing {url} ...");
+
+
                 if (browse)
-                    Process.Start("file:///" + fn);
+                {
+                    switch (Environment.OSVersion.Platform)
+                    {
+                        case PlatformID.Win32NT:
+                            Process.Start(url);
+                            break;
+                        default:
+                            Process.Start(new ProcessStartInfo()
+                            {
+                                Arguments = url,
+                                FileName = "open"
+                            });
+                            break;
+                    }
+                }  
             }
         }
 
