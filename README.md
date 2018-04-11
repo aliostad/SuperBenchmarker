@@ -8,9 +8,9 @@ Superbenchmarker is a load generator command-line tool for performance testing H
 # Gettting Started
 
 ## What you need
-Superbenchmarker (sb) runs on Windows and requires .NET 4.5+ installed on the box.
+Superbenchmarker (sb) runs on Windows or Mac (not tested yet on Linux) and requires .NET 4.52+ or .NET Standard 2.0+ installed on the box.
 
-## Installation
+## Installation - Windows
 Easiest way to install sb is to use [chocolatey](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line). Once you have installed chocolatey, simply run:
 
 ``` bash
@@ -23,6 +23,20 @@ and to update your version of sb:
 ```
 
 You can also download the lastest version from the `Download` [folder](https://github.com/aliostad/SuperBenchmarker/tree/master/download) of this github repository. This is a single exe with all dependencies IL-merged.
+
+## Installation - Mac
+Currently, until `brew` is sorted out, you need to build from the source:
+
+``` bash
+git clone https://github.com/aliostad/SuperBenchmarker
+cd SuperBenchmarker
+./build.sh
+```
+And then you can run using `dotnet` command:
+
+``` bash
+dotnet ./src/SuperBenchmarker/bin/Debug/netcoreapp2.0/SuperBenchmarker.dll -u https://google.com -N 10
+```
 
 ## Running it and basic command parameters
 To run it, just point it to a website or API using `-u (--url)` parameter:
