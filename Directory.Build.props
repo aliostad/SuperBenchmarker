@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+	<Description>SuperBenchmarker is load generating tool for testing APIs (and websites)</Description>  
+    <Authors>Ali Kheyrollahi</Authors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>4.5.0</Version>
+	<PackageProjectUrl>https://github.com/aliostad/SuperBenchmarker/</PackageProjectUrl>
+	<PackageLicenseUrl>https://github.com/aliostad/SuperBenchmarker/blob/master/LICENSE.txt</PackageLicenseUrl>	
+  </PropertyGroup>
+</Project>

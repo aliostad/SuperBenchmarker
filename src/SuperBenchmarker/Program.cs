@@ -358,8 +358,6 @@ namespace SuperBenchmarker
                 File.WriteAllBytes(Path.Combine(reportFolder, "d3.js"), ms.ToArray());
                 var url = "file:///" + fn;
                 url = url.Replace("////", "///");
-                Console.WriteLine($"Browsing {url} ...");
-
 
                 if (browse)
                 {
