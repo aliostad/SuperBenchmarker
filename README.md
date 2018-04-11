@@ -8,7 +8,7 @@ Superbenchmarker is a load generator command-line tool for performance testing H
 # Gettting Started
 
 ## What you need
-Superbenchmarker (sb) runs on Windows or Mac (not tested yet on Linux) and requires .NET 4.52+ or .NET Standard 2.0+ installed on the box.
+Superbenchmarker (sb) runs on Windows or Mac (not tested yet on Linux) and requires .NET 4.52+ or .NET Core 2.0+ installed on the box.
 
 ## Installation - Windows
 Easiest way to install sb is to use [chocolatey](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line). Once you have installed chocolatey, simply run:
