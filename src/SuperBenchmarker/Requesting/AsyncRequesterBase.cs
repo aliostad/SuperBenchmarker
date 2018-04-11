@@ -25,12 +25,21 @@ namespace SuperBenchmarker
 
         public AsyncRequesterBase(CommandLineOptions options)
         {
-            var requestHandler = new WebRequestHandler()
+#if NET452
+           var requestHandler = new WebRequestHandler()
             {
                 UseCookies = false,
-                UseDefaultCredentials = true,
+                UseDefaultCredentials = true,   
                 ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true
             };
+#else
+            var requestHandler = new HttpClientHandler()
+            {
+                UseCookies = false,
+                UseDefaultCredentials = true
+            };
+#endif
+ 
             if (options.UseProxy)
             {
                 requestHandler.UseProxy = true;

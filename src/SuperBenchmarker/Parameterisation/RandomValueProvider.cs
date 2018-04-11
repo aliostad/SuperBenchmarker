@@ -41,7 +41,7 @@ namespace SuperBenchmarker
             }
         }
 
-        internal Func<object> AnalyseThis(string name)
+        public Func<object> AnalyseThis(string name)
         {
             var match = Regex.Match(name, NamePattern);
             if (!match.Success)
