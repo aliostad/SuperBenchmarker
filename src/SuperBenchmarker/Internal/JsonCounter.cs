@@ -11,6 +11,7 @@ namespace SuperBenchmarker
     {
         public static int? Count(string text, string path)
         {
+            path = path.Trim();
             var segments = path==string.Empty ? new string[0] : path.Split('/');
             var j = JToken.Parse(text);
             return FindRecursively(j, segments, 0);

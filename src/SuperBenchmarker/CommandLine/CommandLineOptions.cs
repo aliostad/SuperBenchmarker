@@ -85,7 +85,7 @@ namespace SuperBenchmarker
         [Option('R', "responseRegex", Required =false, HelpText ="Regex to extract from response. If it has groups, it retrieves the last group.")]
         public string ResponseExtractionRegex { get; set; }
 
-        [Option('j', "jsonCount", Required = false, HelpText = "Captures number of elements under the path e.g. root/leaf1/leaf2 finds count of leaf2 children - stores in the log as another parameter")]
+        [Option('j', "jsonCount", Required = false, HelpText = "Captures number of elements under the path e.g. root/leaf1/leaf2 finds count of leaf2 children - stores in the log as another parameter. If the array is at the root of the JSON, use space: -j ' '")]
         public string CaptureJsonElementCount { get; set; }
 
         [Option('W', "warmUpPeriod", Required = false, Default = 0,  HelpText = "Number of seconds to gradually increase number of concurrent users. Warm-up calls do not affect stats.")]

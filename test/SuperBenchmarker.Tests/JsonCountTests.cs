@@ -36,7 +36,7 @@ namespace SuperBenchmarker.Tests
         public void CanCountAtRoot()
         {
             var text = "[ {\"a\": 1}, {}, {}, \"dsd\", 1]";
-            Assert.Equal(5, JsonCounter.Count(text, ""));
+            Assert.Equal(5, JsonCounter.Count(text, " "));
         }
 
     }
