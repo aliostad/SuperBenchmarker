@@ -124,12 +124,21 @@ namespace SuperBenchmarker
             }
         }
 
+        private static void SeeIfDontBrowse(CommandLineOptions commandLineOptions)
+        {
+            if (commandLineOptions.IsDryRun ||
+                (commandLineOptions.NumberOfRequests > 0 && commandLineOptions.NumberOfRequests < 11) ||
+                (commandLineOptions.NumberOfSeconds > 0 && commandLineOptions.NumberOfSeconds < 6))
+                commandLineOptions.DontBrowse = true;
+        }
+
         private static void WithOptionDoItBoy(CommandLineOptions commandLineOptions)
         {
             if (commandLineOptions.IsDryRun)
                 commandLineOptions.NumberOfRequests = 1;
 
             SetupSsl(commandLineOptions);
+            SeeIfDontBrowse(commandLineOptions);
 
             var then = DateTime.Now;
             var reportFolder = commandLineOptions.ReportFolder ?? Path.Combine(Environment.CurrentDirectory, then.ToString("yyyy-MM-dd_HH-mm-ss.ffffff"));
