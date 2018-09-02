@@ -104,7 +104,7 @@ sb -u "http://example.com/api/car/{{{carId}}}"
 in the above, we defined a parameter named *carId*. sb has built-in support for sending random STRING, DATE, DATETIME, DATETIMEOFFSET, INTEGER, DOUBLE, NAME and GUID - and for some data type it can do ranges. For example:
 
 ``` bash
-sb -u "http://example.com/api/car/{{{RAND_INTEGER:[1:1000000]}}}"
+sb -u "http://example.com/api/car/{{{carId:RAND_INTEGER:[1:1000000]}}}"
 ```
 
 sends random integers in the range of 1 and 1,000,000.
