@@ -37,3 +37,4 @@ script.sql
 *.nupkg
 .vs/
 *.userprefs
+.idea/
