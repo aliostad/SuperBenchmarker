@@ -31,7 +31,7 @@ namespace SuperBenchmarker
         [Option('t', "template", Required = false, HelpText = "Path to request template to use")]
         public string Template { get; set; }
 
-        [Option('p', "plugin", Required = false, HelpText = "Name of the plugin (DLL) to replace placeholders. Should contain one class which implements IValueProvider. Must reside in the same folder.")]
+        [Option('p', "plugin", Required = false, HelpText = "Name of the plugin (DLL) to provide a type for replacing placeholders or one for overriding status code.Must reside in the same folder.")]
         public string Plugin { get; set; }
 
         [Option('l', "logfile", Required = false, HelpText = "Path to the log file storing run stats")]

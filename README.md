@@ -1,7 +1,7 @@
 SuperBenchmarker
 ================
 
-Superbenchmarker is a load generator command-line tool for performance testing HTTP APIs and websites. Inspired by Apache Benchmark, it is meant to become Apache Benchmark (ab.exe) on steriods. It displays final results at the end of the test in the terminal window but it also constantly reports back in a web interface.
+Superbenchmarker is a command-line load generator tool for performance testing HTTP APIs and websites. Inspired by Apache Benchmark, it is meant to become Apache Benchmark (ab.exe) on steriods. It displays final results at the end of the test in the terminal window but it also constantly reports back in a web interface.
 
 ![screenshot](https://raw.github.com/aliostad/SuperBenchmarker/master/sb-reports.png)
 

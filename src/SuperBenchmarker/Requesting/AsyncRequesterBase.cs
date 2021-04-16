@@ -22,7 +22,8 @@ namespace SuperBenchmarker
         protected TemplateParser _templateParser;
         protected IValueProvider _valueProvider;
         protected RandomValueProvider _randomValueProvider;
-
+        protected IResponseStatusOverride _responseStatusOverride;
+        
         public AsyncRequesterBase(CommandLineOptions options)
         {
 #if NET452
@@ -65,10 +66,21 @@ namespace SuperBenchmarker
                 var assembly = Assembly.LoadFile(_options.Plugin);
                 var valueProviderType = assembly.GetExportedTypes().FirstOrDefault(t => typeof(IValueProvider)
                                                                       .IsAssignableFrom(t));
-                if (valueProviderType == null)
-                    throw new ArgumentException("No public type in plugin implements IValueProvider.");
+                if (valueProviderType != null)
+                {
+                    _valueProvider = (IValueProvider)Activator.CreateInstance(valueProviderType);
+                    Console.WriteLine($"Loaded {valueProviderType.FullName} from the plugin as IValueProvider.");
+                }
+                
+                var responseOverride = assembly.GetExportedTypes().FirstOrDefault(t => typeof(IResponseStatusOverride)
+                    .IsAssignableFrom(t));
 
-                _valueProvider = (IValueProvider)Activator.CreateInstance(valueProviderType);
+                if (responseOverride != null)
+                {
+                    _responseStatusOverride = (IResponseStatusOverride) Activator.CreateInstance(responseOverride);
+                    Console.WriteLine($"Loaded {responseOverride.FullName} from the plugin as IResponseStatusOverride.");
+                }
+                
             }
             else if (!string.IsNullOrEmpty(options.ValuesFile)) // csv values file
             {
@@ -117,6 +129,12 @@ namespace SuperBenchmarker
                 if (response.Content != null)
                 {
                     var content = await response.Content.ReadAsByteArrayAsync();
+                    if (_responseStatusOverride != null)
+                    {
+                        statusCode = _responseStatusOverride.OverrideStatus(statusCode,
+                            content, response.Headers, request);
+                    }
+                    
                     if (_options.SaveResponses)
                     {
                         // fire and forget not to affect time taken or RPS
