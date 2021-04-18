@@ -1,8 +1,8 @@
 cd chocolatey
 
-cpack
+cpack SuperBenchmarkerCore.nuspec
+cpack SuperBenchmarker.nuspec
 
-#nuget.exe setApiKey YOURS-VERY-OWN-API-KEY -Source http://chocolatey.org/
 gci *.nupkg | %{
     Write-Host Push $_
     cpush $_

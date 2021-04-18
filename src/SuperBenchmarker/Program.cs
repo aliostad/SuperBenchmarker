@@ -97,7 +97,11 @@ namespace SuperBenchmarker
 
             Parser.Default.ParseArguments<CommandLineOptions>(args)
                 .WithParsed(x => WithOptionDoItBoy(x))
-                .WithNotParsed(y => Console.WriteLine(y));
+                .WithNotParsed(y =>
+                {
+                    foreach (var e in y)
+                        Console.WriteLine($"Error Code: {e}");
+                });
         }
 
         private static void SetupSsl(CommandLineOptions commandLineOptions)

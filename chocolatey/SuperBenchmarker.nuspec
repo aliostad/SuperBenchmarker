@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>SuperBenchmarker</id>
-    <version>4.5.1</version>
+    <version>4.6.0</version>
     <title>SuperBenchmarker</title>
     <authors>Ali Kheyrollahi</authors>
     <owners>Ali Kheyrollahi</owners>
@@ -15,9 +15,9 @@
     <tags>superbenchmarker sb benchmarking performance</tags>    
   </metadata>
   <files>
-      <file src="..\download\*" target="tools" />
+      <file src="..\download\sb.exe" target="tools" />
+      <file src="..\download\sb.pdb" target="tools" />
       <file src="..\LICENSE.txt" target="tools" />
       <file src="VERIFICATION.txt" target="tools" />
-	  
     </files>
 </package>
