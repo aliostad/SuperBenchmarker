@@ -8,10 +8,12 @@ Superbenchmarker is a command-line load generator tool for performance testing H
 # Gettting Started
 
 ## What you need
-Superbenchmarker (sb) runs on Windows or Mac (not tested yet on Linux) and requires .NET 4.52+ or .NET Core 2.0+ installed on the box.
+Superbenchmarker (sb or sbcore) runs on Windows or Mac (not tested yet on Linux) and requires .NET 4.52+ or .NET Core 2.1+ installed on the box.
 
 ## Installation - Windows
-Easiest way to install sb is to use [chocolatey](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line). Once you have installed chocolatey, simply run:
+Easiest way to install sb is to use [chocolatey](https://github.com/chocolatey/chocolatey/wiki/Installation#command-line). 
+
+### SuperBenchmarker (built on .NET 4.5.2)
 
 ``` bash
 > cinst SuperBenchmarker
@@ -20,6 +22,29 @@ and to update your version of sb:
 
 ``` bash
 > cup SuperBenchmarker
+```
+
+In this release, use `sb` to run SuperBenchmaker:
+
+``` bash
+> sb
+```
+
+### NEW! SuperBenchmarkerCore (built on .NET Core 3.1)
+
+``` bash
+> cinst SuperBenchmarkerCore
+```
+and to update your version of sb:
+
+``` bash
+> cup SuperBenchmarkerCore
+```
+
+In this release, use `sbcore` to run SuperBenchmaker:
+
+``` bash
+> sbcore
 ```
 
 You can also download the lastest version from the `Download` [folder](https://github.com/aliostad/SuperBenchmarker/tree/master/download) of this github repository. This is a single exe with all dependencies IL-merged.
@@ -39,7 +64,7 @@ dotnet ./src/SuperBenchmarker/bin/Debug/netcoreapp2.0/SuperBenchmarker.dll -u ht
 ```
 
 ## Running it and basic command parameters
-To run it, just point it to a website or API using `-u (--url)` parameter:
+To run it, just point it to a website or API using `-u (--url)` parameter (**NOTE**: In all these examples, if you have installed SuperBenchmarkerCore, replace `sb` with `sbcore`):
 
 ``` bash
 sb -u "http://example.com"
@@ -239,13 +264,15 @@ sb -u "https://example.com/api/things" -g 2
 You can use `-W` option to provide number of seconds for warmup where the results are not included in the test.
 
 ## Plugin development
-In order to build a a plugin to have full control over parameterisation, you can install Superbenchmarker nuget package:
+Not all features can be done via command line parameters and sometimes more flexibility is needed that must be done via a plugin. SuperBenchmarker provides plugin interfaces for these two scenarios:
 
-```
-Package-Install superbenchmarker
-```
+ - full control over parameterisation (instead of providing a CSV or TSV)
+ - Overriding HTTP Status Code. There are some APIs that return 200 and the success is determined by the content.
 
-This adds a reference to sb and then you implement a public class implementing IValueProvider:
+In order to build a plugin, just add a reference to `sb.exe` in chocolatey lib folder (if you have installed .NET Core package, add a reference to `superbenchmarker.dll`) and build your DLL.
+
+### parameterisation (IValueProvider)
+You need to include in your DLL a public class implementing IValueProvider. SuperBenchmarker search through public types in the DLL and if it finds an implementation of `IValueProvider`, it uses it.
 
 ``` csharp
 public class MyPlugin: IValueProvider
@@ -262,10 +289,30 @@ public class MyPlugin: IValueProvider
 }
 ```
 
+### Overriding HTTP Status (IResponseStatusOverride)
+You need to include in your DLL a public class implementing IResponseStatusOverride. SuperBenchmarker search through public types in the DLL and if it finds an implementation of `IResponseStatusOverride`, it uses it.
+
+``` csharp
+public class TeaPot : IResponseStatusOverride
+{
+    public HttpStatusCode OverrideStatus(HttpStatusCode statusReceived, 
+        byte[] responseBuffer, 
+        HttpResponseHeaders responseHeaders,
+        HttpRequestMessage request)
+    {
+        // look into response buffer (byte array) and then return a status
+        return (HttpStatusCode) 418;
+    }
+}
+```
+
+### Running with the plugin
 Then run this commmand (**NOTE** name of the parameter returned in the dictionary is the same as the one defined below):
 ``` bash
-sb -u "https://example.com/api/car/{{{ID}}}" -p myplugin.dll
+sb -u "https://example.com/api/car/{{{ID}}}" -p c:/path/to/my/plugin/myplugin.dll
 ```
+
+Bear in mind, in most cases you need to pass the full path to the DLL.
 
 # Summary
 
@@ -284,8 +331,8 @@ sb -u "https://example.com/api/car/{{{ID}}}" -p myplugin.dll
 
   -t, --template               Path to request template to use
 
-  -p, --plugin                 Name of the plugin (DLL) to replace placeholders. Should contain one class which
-                               implements IValueProvider. Must reside in the same folder.
+  -p, --plugin                 Name of the plugin (DLL) to replace placeholders or override HTTP Status.
+                               Should contain one class implements IValueProvider or IResponseStatusOverride. 
 
   -l, --logfile                Path to the log file storing run stats
 
